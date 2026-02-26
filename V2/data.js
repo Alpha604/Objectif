@@ -27,7 +27,7 @@ window.CHESS_DATA = {
     timeline: [
         { date: "2025-12-01", desc: "Passage bullet", icon: "bolt", eloValue: 1000 },
         { date: "2025-12-01", desc: "Nouvelle version du site", icon: "serveur", eloValue: 'V2.1.0' },
-        { date: "2025-12-01", desc: "D", icon: "balai", eloValue: 'PRO' },
+        { date: "2025-12-01", desc: "Modification du style", icon: "balai", eloValue: 'PRO' },
     ],
 
     // Données pour le graphique (6 derniers mois)
