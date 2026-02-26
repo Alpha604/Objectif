@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaRomo604 · tableau de bord objectif d'échecs</title>
+    <!-- Inter font + icônes minimales (Font Awesome) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js pour la visualisation uniquement -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Fichier de données statiques (JSON embarqué dans JS) -->
+    <script src="data.js" defer></script>
+    <!-- Script principal (chargé après data) -->
+    <script src="app.js" defer></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a0f13 0%, #0f181d 100%);
+            font-family: 'Inter', sans-serif;
+            color: #ecf3f0;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+
+        /* Grain subtil et lueur */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 30% 40%, rgba(75, 130, 100, 0.08) 0%, transparent 50%),
+                        repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0px, rgba(0,0,0,0.02) 2px, transparent 2px, transparent 6px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Conteneur principal */
+        .dashboard {
+            max-width: 1400px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Palette enrichie */
+        :root {
+            --card-bg: #1b262e;
+            --card-elevated: #22333c;
+            --green-moss: #2e6b58;
+            --green-forest: #1e5243;
+            --gold-antique: #c9a85c;
+            --gold-soft: #eadbb0;
+            --border-subtle: #3f6054;
+            --text-muted: #bcd9cf;
+            --shadow-luxury: 0 28px 45px -18px #000000, 0 0 0 1px rgba(70, 130, 110, 0.5) inset, 0 0 0 1px rgba(180, 160, 100, 0.2);
+        }
+
+        /* Header élégant */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2.8rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .title-block h1 {
+            font-size: 2.4rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            background: linear-gradient(145deg, #f7f1e0, #d4e8db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-shadow: 0 2px 8px rgba(0,40,30,0.6);
+        }
+
+        .title-block i {
+            color: #ecd59c;
+            font-size: 2.2rem;
+            filter: drop-shadow(0 4px 10px #598d73);
+        }
+
+        .stat-badges {
+            display: flex;
+            gap: 1.2rem;
+        }
+
+        .stat-badge {
+            background: rgba(25, 45, 40, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 0.6rem 1.6rem;
+            border: 1px solid #598872;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: #f5e7c8;
+            font-weight: 500;
+            font-size: 0.95rem;
+            box-shadow: 0 8px 18px -6px #000000aa, 0 0 0 1px #2b6b55 inset;
+        }
+
+        .stat-badge i {
+            color: #e5c687;
+        }
+
+        /* Grille des cartes Elo */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .elo-card {
+            background: var(--card-bg);
+            border-radius: 3.2rem;
+            padding: 2.2rem 1.8rem;
+            box-shadow: 0 32px 52px -20px #000000, 0 0 0 1px #3b6d5b inset, 0 0 0 2px rgba(170, 150, 80, 0.1) inset;
+            border: 1px solid #547a66;
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.3, 1);
+            backdrop-filter: blur(2px);
+        }
+
+        .elo-card:hover {
+            border-color: #ddc88c;
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 45px 65px -18px black, 0 0 0 1px #c9ae6b inset, 0 0 30px #4d8873;
+            background: #1f2d36;
+        }
+
+        .mode-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-header i {
+            font-size: 2rem;
+            color: #f3d9a0;
+            background: #1d483e;
+            padding: 14px;
+            border-radius: 28px;
+            box-shadow: 0 8px 14px -4px #00000077, 0 0 0 1px #b49b5b inset;
+        }
+
+        .mode-header h2 {
+            font-size: 1.9rem;
+            font-weight: 470;
+            color: #f2f7f0;
+            text-shadow: 0 2px 6px #1c473a;
+        }
+
+        .elo-values {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 1.8rem 0 1rem;
+        }
+
+        .current-elo {
+            font-size: 3.8rem;
+            font-weight: 600;
+            line-height: 1;
+            color: white;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 20px #82baa4;
+        }
+
+        .target-elo {
+            font-size: 1.7rem;
+            color: #b7cfc2;
+        }
+
+        .target-elo span {
+            color: #f2ddb0;
+            font-weight: 600;
+            margin-left: 0.4rem;
+            text-shadow: 0 0 6px #b5944b;
+        }
+
+        .progress-wrapper {
+            margin: 1.5rem 0 0.8rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #cbe5d8;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 500;
+        }
+
+        .progress-bar-bg {
+            height: 0.85rem;
+            background: #17322b;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: inset 0 4px 8px #00000099, 0 1px 2px #5d917b;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #368068, #dcb570, #eedbaa);
+            border-radius: 30px;
+            box-shadow: 0 0 20px #dbb06b;
+            transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .goal-note {
+            display: inline-block;
+            margin-top: 1.5rem;
+            background: #19463b;
+            color: #f5e2b2;
+            border-radius: 60px;
+            padding: 0.45rem 1.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #cbb07c;
+            letter-spacing: 0.02em;
+            box-shadow: 0 6px 12px #00000055;
+        }
+
+        .goal-note i {
+            margin-right: 8px;
+            color: #f3cd7a;
+        }
+
+        /* Panneau bas : timeline + graphique */
+        .bottom-panel {
+            display: grid;
+            grid-template-columns: 1.1fr 2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-card, .chart-card {
+            background: #1f303a;
+            border-radius: 3rem;
+            padding: 2.2rem 2rem;
+            box-shadow: 0 28px 48px -20px black, 0 0 0 1px #467561 inset, 0 0 0 2px rgba(210, 180, 100, 0.2) inset;
+            border: 1px solid #5c8775;
+            backdrop-filter: blur(2px);
+        }
+
+        .timeline-card h3, .chart-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #f3dfb0;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            text-shadow: 0 2px 8px #2b5f4b;
+        }
+
+        .timeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1.3rem;
+            border-bottom: 1px dashed #417561;
+            padding-bottom: 1rem;
+        }
+
+        .timeline-icon {
+            width: 3.4rem;
+            height: 3.4rem;
+            background: #1f4c40;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f7e2b5;
+            border: 1px solid #bd9f5a;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px black;
+        }
+
+        .timeline-content p {
+            font-weight: 600;
+            color: #fefef5;
+            font-size: 1.05rem;
+        }
+
+        .timeline-content small {
+            color: #cce6da;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 260px;
+            width: 100%;
+        }
+
+        .footnote-motivation {
+            margin-top: 2.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .achievement-banner {
+            background: #1f4b3c;
+            border-radius: 80px;
+            padding: 0.9rem 2.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5rem;
+            border: 1px solid #efd48f;
+            color: #fcf0cd;
+            font-weight: 550;
+            box-shadow: 0 15px 30px -8px black, 0 0 0 1px #b59f5b inset, 0 0 30px #5bbf99;
+            backdrop-filter: blur(4px);
+            font-size: 1.1rem;
+        }
+
+        .achievement-banner i {
+            font-size: 2.2rem;
+            color: #ffdf8c;
+            filter: drop-shadow(0 0 12px #ffd966);
+        }
+
+        /* Pied de page retravaillé */
+        .footer-info {
+            margin-top: 2.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #9bc3b2;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            border-top: 2px solid #2b5947;
+            padding-top: 1.8rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .links-container {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            background: #1b312c;
+            border-radius: 60px;
+            padding: 0.5rem 1rem 0.5rem 1.8rem;
+            box-shadow: 0 0 0 1px #4c7f68 inset, 0 10px 24px -10px black;
+            border: 1px solid #6a8f7a;
+            align-items: center;
+        }
+
+        .link-btn {
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1.4rem;
+            border-radius: 40px;
+            background: #2d6552;
+            color: #f2e3bc;
+            border: 1px solid #bbaa77;
+            transition: all 0.25s ease;
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            box-shadow: 0 5px 12px #00000055;
+        }
+
+        .link-btn:hover {
+            background: #1d5943;
+            color: #f7eac1;
+            transform: translateY(-3px);
+            border-color: #ebc87e;
+            box-shadow: 0 12px 22px -6px black, 0 0 15px #ccb26b;
+        }
+
+        .last-update {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: #f7dfb5;
+            background: #1d4238;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid #bda268;
+            box-shadow: 0 6px 14px #00000055;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+
+        .last-update i {
+            color: #e7c580;
+        }
+
+        @media (max-width: 950px) {
+            .grid-cards {
+                grid-template-columns: 1fr;
+            }
+            .bottom-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* petit ajustement des couleurs du canvas */
+        canvas {
+            filter: drop-shadow(0 8px 18px #102a22);
+            border-radius: 28px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header avec badges dynamiques -->
+        <div class="header-section">
+            <div class="title-block">
+                <h1><i class="fas fa-chess-queen"></i> AlphaRomo604 · Chess.com</h1>
+            </div>
+            <div class="stat-badges" id="headerBadges">
+                <!-- injecté par app.js -->
+            </div>
+        </div>
+
+        <!-- Les 3 cartes Elo injectées par app.js depuis data.js -->
+        <div class="grid-cards" id="eloCardsContainer"></div>
+
+        <!-- Timeline + Graphique -->
+        <div class="bottom-panel">
+            <div class="timeline-card">
+                <h3><i class="fas fa-timeline"></i> dates clés</h3>
+                <div class="timeline-list" id="timelineList"></div>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-line"></i> évolution 6 mois</h3>
+                <div class="chart-container">
+                    <canvas id="eloChart"></canvas>
+                </div>
+                <div style="display: flex; gap: 1.5rem; margin-top: 1.4rem; justify-content: flex-end; font-size:0.85rem; color: #d1ecd9;">
+                    <span><i class="fas fa-circle" style="color:#2e8b57; filter: drop-shadow(0 0 6px #3ba86b);"></i> bullet</span>
+                    <span><i class="fas fa-circle" style="color:#c9a15b; filter: drop-shadow(0 0 6px #e5b76b);"></i> blitz</span>
+                    <span><i class="fas fa-circle" style="color:#eed89c; filter: drop-shadow(0 0 6px #f8da8b);"></i> rapide</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bannière objectif atteint -->
+        <div class="footnote-motivation" id="goalAchievedBanner"></div>
+
+        <!-- Footer avec date de dernière mise à jour -->
+        <div class="footer-info">
+            <div><i class="fas fa-chess-board" style="color:#c8b07c;"></i>  AlphaRomo604 · &copy; 2026</div>
+            <div class="links-container">
+                <a href="https://www.chess.com/member/alpharomo604" target="_blank" class="link-btn">Chess.com</a>
+                <a href="https://lichess.org/@/AlphaRomeo604" target="_blank" class="link-btn">Lichess</a>
+                <a href="https://github.com/Alpha604/Objectif" target="_blank" class="link-btn">GitHub</a>
+                <div class="last-update" id="lastUpdateDisplay">
+                    <!-- injecté par app.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
