@@ -6,14 +6,14 @@ Dashboard interactif pour suivre ma progression Elo sur Chess.com avec objectifs
 
 ## 📋 Historique des modifications
 
-### **28 février 2026** - Version 2.2.0
+### **28 février 2026** - Version 2.3.0
 - **Nouveauté** : Ajout d'une page `tel.html` pour les visiteurs mobiles
 - **Amélioration** : Redirection automatique des téléphones vers une page d'information
 - **Interface** : Bouton "Forcer l'accès" pour les utilisateurs mobiles qui veulent quand même voir le site
 - **Astuce** : Petit message d'aide si le forçage ne fonctionne pas
 - **Design** : Page mobile épurée mais élégante avec icônes
 
-### **27 février 2026** - Version 2.1.0
+### **28 février 2026** - Version 2.1.0
 - **Nouveauté** : Ajout des dates limites pour chaque objectif (bullet, blitz, rapide)
 - **Fonctionnalité** : Calcul automatique des jours restants avant chaque deadline
 - **Visuel** : Code couleur selon l'urgence (vert >15j, orange <15j, rouge <7j, rouge foncé dépassé)
