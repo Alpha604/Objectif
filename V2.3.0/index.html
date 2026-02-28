@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaRomo604 · tableau de bord objectif d'échecs</title>
+    
+    <!-- REDIRECTION MOBILE -->
+    <script>
+        if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "tel.html";
+        }
+    </script>
+
+    <!-- Inter font + icônes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js avec plugin annotation -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+        }
+
+        .dashboard {
+            max-width: 1440px;
+            width: 100%;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .title-block h1 {
+            font-size: 2rem;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-block i {
+            color: #82c4a8;
+            font-size: 2rem;
+        }
+
+        .stat-badges {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stat-badge {
+            background: #1e2c34;
+            border-radius: 40px;
+            padding: 0.5rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: #cfdee9;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: 1px solid #354f5c;
+        }
+
+        .stat-badge i {
+            color: #82c4a8;
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .elo-card {
+            background: #16222b;
+            border-radius: 28px;
+            padding: 2rem 1.8rem;
+            border: 1px solid #2a404d;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .elo-card:hover {
+            border-color: #82c4a8;
+            transform: translateY(-4px);
+        }
+
+        .mode-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-header i {
+            font-size: 1.6rem;
+            color: #82c4a8;
+            background: #1e333e;
+            padding: 10px;
+            border-radius: 18px;
+        }
+
+        .mode-header h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #e6edf3;
+        }
+
+        .elo-values {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 1.2rem 0 1rem;
+        }
+
+        .current-elo {
+            font-size: 3.2rem;
+            font-weight: 600;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+
+        .target-elo {
+            font-size: 1.4rem;
+            color: #a0b8c7;
+        }
+
+        .target-elo span {
+            color: #82c4a8;
+            font-weight: 600;
+            margin-left: 0.3rem;
+        }
+
+        .progress-wrapper {
+            margin: 1.2rem 0 0.8rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #a0b8c7;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-bar-bg {
+            height: 0.6rem;
+            background: #1f313c;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #82c4a8;
+            border-radius: 20px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-note {
+            display: inline-block;
+            margin-top: 1.2rem;
+            background: #1e333e;
+            color: #cfdee9;
+            border-radius: 40px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #3a5768;
+        }
+
+        .goal-note i {
+            margin-right: 6px;
+            color: #82c4a8;
+        }
+
+        /* Styles pour les dates limites */
+        .deadline-note {
+            display: inline-block;
+            margin-top: 0.8rem;
+            background: #1e333e;
+            color: #cfdee9;
+            border-radius: 40px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #3a5768;
+        }
+        
+        .deadline-note i {
+            margin-right: 6px;
+            color: #82c4a8;
+        }
+        
+        .deadline-urgent {
+            background: #3e2a2a;
+            border-color: #ff6b6b;
+            color: #ffb3b3;
+        }
+        
+        .deadline-urgent i {
+            color: #ff6b6b;
+        }
+        
+        .deadline-warning {
+            background: #3e352a;
+            border-color: #ffb347;
+            color: #ffd966;
+        }
+        
+        .deadline-warning i {
+            color: #ffb347;
+        }
+        
+        .deadline-expired {
+            background: #3a1e1e;
+            border-color: #dc143c;
+            color: #ff8a8a;
+        }
+        
+        .deadline-expired i {
+            color: #dc143c;
+        }
+
+        .bottom-panel {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .timeline-card, .chart-card {
+            background: #16222b;
+            border-radius: 28px;
+            padding: 2rem;
+            border: 1px solid #2a404d;
+        }
+
+        .timeline-card h3, .chart-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #a0b8c7;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .timeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #253b47;
+            padding-bottom: 1rem;
+        }
+
+        .timeline-icon {
+            width: 2.8rem;
+            height: 2.8rem;
+            background: #1e333e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #82c4a8;
+            font-size: 1.2rem;
+        }
+
+        .timeline-content p {
+            font-weight: 500;
+            color: #e6edf3;
+            font-size: 0.95rem;
+        }
+
+        .timeline-content small {
+            color: #a0b8c7;
+            font-size: 0.75rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 260px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 1.8rem;
+            justify-content: flex-end;
+            font-size: 0.85rem;
+            color: #a0b8c7;
+        }
+
+        .chart-legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .footnote-motivation {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .achievement-banner {
+            background: #1a2f3a;
+            border-radius: 60px;
+            padding: 0.8rem 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid #4b7a8c;
+            color: #e6edf3;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .achievement-banner i {
+            color: #ffd966;
+        }
+
+        .footer-info {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #6d8f9f;
+            font-size: 0.8rem;
+            border-top: 1px solid #253b47;
+            padding-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .footer-link {
+            text-decoration: none;
+            color: #a0b8c7;
+            font-weight: 500;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            background: #1e2c34;
+            border: 1px solid #354f5c;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+        .footer-link:hover {
+            border-color: #82c4a8;
+            color: #e6edf3;
+        }
+
+        .last-update {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #a0b8c7;
+            background: #1e2c34;
+            padding: 0.4rem 1.2rem;
+            border-radius: 30px;
+            border: 1px solid #354f5c;
+        }
+
+        .last-update i {
+            color: #82c4a8;
+        }
+
+        @media (max-width: 950px) {
+            .grid-cards {
+                grid-template-columns: 1fr;
+            }
+            .bottom-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header-section">
+            <div class="title-block">
+                <h1><i class="fas fa-chess-knight"></i> AlphaRomo604  ·  Objectifs</h1>
+            </div>
+            <div class="stat-badges" id="headerBadges"></div>
+        </div>
+
+        <div class="grid-cards" id="eloCardsContainer"></div>
+
+        <div class="bottom-panel">
+            <div class="timeline-card">
+                <h3><i class="fas fa-calendar"></i> dates clés</h3>
+                <div class="timeline-list" id="timelineList"></div>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-line"></i> évolution 6 mois</h3>
+                <div class="chart-container">
+                    <canvas id="eloChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <span><span class="legend-color" style="background:#4bc0c0;"></span> bullet</span>
+                    <span><span class="legend-color" style="background:#ffb347;"></span> blitz</span>
+                    <span><span class="legend-color" style="background:#ff8c8c;"></span> rapide</span>
+                    <span><span class="legend-color" style="background:#ffffff; border:2px dashed #aaa;"></span> objectifs</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footnote-motivation" id="goalAchievedBanner"></div>
+
+        <div class="footer-info">
+            <div><i class="fa-regular fa-copyright"></i> AlphaRomo604 · v2.3.0 · 2026</div>
+            <div class="footer-links">
+                <a href="https://www.chess.com/member/alpharomo604" class="footer-link">Chess.com</a>
+                <a href="https://lichess.org/@/AlphaRomeo604" class="footer-link">Lichess</a>
+                <a href="https://github.com/Alpha604/Objectif" class="footer-link">GitHub</a>
+                <a href="https://alpha604.github.io/Objectif/V2/index.html" class="footer-link"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                <div class="last-update" id="lastUpdateDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
