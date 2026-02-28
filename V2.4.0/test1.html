@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Document</title>
+</head>
+<body>
+    <style>
+        /* Style de base pour tous les badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+/* Badge Bêta */
+.badge-beta {
+    background: #ffd966;
+    color: #0b1219;
+}
+.badge-beta i {
+    color: #b57c00;
+}
+
+/* Badge Nouveau */
+.badge-new {
+    background: #4bc0c0;
+    color: #0b1219;
+}
+.badge-new i {
+    color: #1e6666;
+}
+
+/* Badge Populaire */
+.badge-popular {
+    background: #ff8c8c;
+    color: #0b1219;
+}
+.badge-popular i {
+    color: #b34747;
+}
+
+/* Badge Pro */
+.badge-pro {
+    background: linear-gradient(135deg, #82c4a8, #4a7c6c);
+    color: white;
+}
+
+/* Badge Expérimental */
+.badge-experimental {
+    background: #c9a85c;
+    color: #0b1219;
+    border: 1px dashed #e6c27a;
+}
+
+/* Badge Bientôt */
+.badge-soon {
+    background: #6d8f9f;
+    color: white;
+}
+.badge-soon i {
+    color: #ffd966;
+}
+
+/* Badge Alpha */
+.badge-alpha {
+    background: #ffb347;
+    color: #0b1219;
+}
+
+/* Badge Mis à jour */
+.badge-updated {
+    background: #4db90e;
+    color: #0b1219;
+}
+.badge-updated i {
+    color: #2d6e0a;
+}
+
+/* Badge Chaud */
+.badge-hot {
+    background: #ff6b6b;
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; transform: scale(1.05); }
+    100% { opacity: 1; }
+}
+
+/* Badge Recommandé */
+.badge-recommended {
+    background: #9370db;
+    color: white;
+}
+
+/* Badge Défi */
+.badge-challenge {
+    background: #20b2aa;
+    color: white;
+    border: 1px solid #98fb98;
+}
+
+/* Badge Record */
+.badge-record {
+    background: #ffd700;
+    color: #0b1219;
+    font-weight: 700;
+}
+
+/* Petits badges pour les cartes */
+.badge-small {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+}
+
+/* Badge avec icône seulement */
+.badge-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+    </style>
+    <!-- Badges standards -->
+    <span class="badge badge-beta"><i class="fas fa-flask"></i> Bêta</span>
+    <span class="badge badge-new"><i class="fas fa-star"></i> Nouveau</span>
+    <span class="badge badge-popular"><i class="fas fa-fire"></i> Populaire</span>
+    <span class="badge badge-pro"><i class="fas fa-crown"></i> Pro</span>
+    <span class="badge badge-experimental"><i class="fas fa-dna"></i> Expérimental</span>
+    <span class="badge badge-soon"><i class="fas fa-hourglass-half"></i> Bientôt</span>
+    <span class="badge badge-alpha"><i class="fas fa-atom"></i> Alpha</span>
+    <span class="badge badge-updated"><i class="fas fa-sync-alt"></i> Mis à jour</span>
+    <span class="badge badge-hot"><i class="fas fa-pepper-hot"></i> Chaud</span>
+    <span class="badge badge-recommended"><i class="fas fa-thumbs-up"></i> Recommandé</span>
+    <span class="badge badge-challenge"><i class="fas fa-flag-checkered"></i> Défi</span>
+    <span class="badge badge-record"><i class="fas fa-trophy"></i> Record</span>
+
+    <!-- Petits badges -->
+    <span class="badge badge-new badge-small">Nouveau</span>
+    <span class="badge badge-beta badge-small">Bêta</span>
+    <span class="badge badge-updated badge-small">v2.0</span>
+
+    <!-- Badges avec seulement l'icône -->
+    <span class="badge badge-icon badge-new"><i class="fas fa-star"></i></span>
+    <span class="badge badge-icon badge-hot"><i class="fas fa-fire"></i></span>
+    <span class="badge badge-icon badge-pro"><i class="fas fa-crown"></i></span>
+</body>
+</html>

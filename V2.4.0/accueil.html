@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Dashboard · Accueil</title>
+    
+    <!-- REDIRECTION MOBILE -->
+    <script>
+        if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "tel.html";
+        }
+    </script>
+
+    <!-- Inter font + icônes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Configuration des photos de profil -->
+    <script src="pdp.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fond avec effet de plateau d'échecs */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 30%, rgba(130, 196, 168, 0.03) 0%, transparent 30%),
+                radial-gradient(circle at 75% 70%, rgba(130, 196, 168, 0.03) 0%, transparent 30%),
+                repeating-linear-gradient(45deg, rgba(53, 79, 92, 0.1) 0px, rgba(53, 79, 92, 0.1) 2px, transparent 2px, transparent 8px);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 18, 25, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-spinner {
+            background: rgba(30, 44, 52, 0.9);
+            padding: 2rem;
+            border-radius: 32px;
+            border: 1px solid #82c4a8;
+            text-align: center;
+        }
+
+        .loading-spinner i {
+            font-size: 3rem;
+            color: #82c4a8;
+            margin-bottom: 1rem;
+        }
+
+        .loading-spinner p {
+            color: #e6edf3;
+            font-weight: 500;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(18, 28, 36, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 60px;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .logo i {
+            color: #82c4a8;
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            color: #a0b8c7;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(130, 196, 168, 0.1);
+            color: #e6edf3;
+        }
+
+        .nav-link.active {
+            background: #82c4a8;
+            color: #0b1219;
+        }
+
+        /* Bouton de demande de compte - JAUNE */
+        .request-button {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.4rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 40px;
+            color: #0b1219;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .request-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.5);
+            background: linear-gradient(135deg, #FFE55C, #FFB347);
+        }
+
+        .request-button i {
+            font-size: 1rem;
+            color: #0b1219;
+        }
+
+        /* Modal de confirmation */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 18, 25, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(22, 34, 43, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid #FFD700;
+            border-radius: 32px;
+            padding: 2.5rem;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(255, 215, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+            text-align: center;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: #FFD700;
+            font-size: 2rem;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .modal-content p {
+            color: #a0b8c7;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .chess-profile {
+            background: rgba(30, 44, 52, 0.6);
+            border: 1px solid #354f5c;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chess-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #82c4a8, #4a9080);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .chess-info {
+            text-align: left;
+        }
+
+        .chess-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+        }
+
+        .chess-info p {
+            color: #FFD700;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .modal-button.primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0b1219;
+        }
+
+        .modal-button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .modal-button.secondary {
+            background: rgba(30, 44, 52, 0.6);
+            border: 1px solid #354f5c;
+            color: #a0b8c7;
+        }
+
+        .modal-button.secondary:hover {
+            background: rgba(37, 59, 71, 0.8);
+            border-color: #82c4a8;
+            color: #ffffff;
+        }
+
+        /* Section héro */
+        .hero-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 4rem;
+            align-items: center;
+        }
+
+        .hero-left h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff, #82c4a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-left p {
+            font-size: 1.1rem;
+            color: #a0b8c7;
+            margin-bottom: 2rem;
+            max-width: 450px;
+        }
+
+        .stats-mini {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat-mini-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stat-mini-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(130, 196, 168, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #82c4a8;
+            font-size: 1.2rem;
+        }
+
+        .stat-mini-info h4 {
+            font-size: 0.8rem;
+            color: #a0b8c7;
+            font-weight: 400;
+        }
+
+        .stat-mini-info p {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        /* Carte de sélection */
+        .hero-right {
+            background: rgba(22, 34, 43, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 2rem;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .selector-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.5);
+        }
+
+        .selector-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(130, 196, 168, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #82c4a8;
+            font-size: 1.5rem;
+        }
+
+        .selector-title h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .selector-title p {
+            font-size: 0.85rem;
+            color: #a0b8c7;
+        }
+
+        /* Grille des comptes */
+        .accounts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .accounts-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .accounts-grid::-webkit-scrollbar-track {
+            background: #1e2c34;
+            border-radius: 4px;
+        }
+
+        .accounts-grid::-webkit-scrollbar-thumb {
+            background: #82c4a8;
+            border-radius: 4px;
+        }
+
+        .account-card {
+            background: rgba(30, 44, 52, 0.4);
+            border: 1px solid #354f5c;
+            border-radius: 20px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .account-card:hover {
+            background: rgba(37, 59, 71, 0.8);
+            border-color: #82c4a8;
+            transform: translateX(5px);
+        }
+
+        .account-card.selected {
+            background: rgba(130, 196, 168, 0.1);
+            border-color: #82c4a8;
+            box-shadow: 0 0 0 2px rgba(130, 196, 168, 0.2);
+        }
+
+        .account-card.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .account-card.disabled:hover {
+            transform: none;
+            border-color: #354f5c;
+        }
+
+        .account-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #253b47;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .account-card:hover .account-avatar {
+            border-color: #82c4a8;
+        }
+
+        .account-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 20px;
+            color: #ffffff;
+        }
+
+        .account-info {
+            flex: 1;
+        }
+
+        .account-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #ffffff;
+            margin-bottom: 0.2rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .account-handle {
+            font-size: 0.8rem;
+            color: #a0b8c7;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            margin-left: 0.5rem;
+        }
+
+        .status-badge.blocked {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+        }
+
+        .status-badge.loading {
+            background: rgba(255, 180, 71, 0.1);
+            color: #ffb347;
+        }
+
+        .account-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: #a0b8c7;
+        }
+
+        .account-stats span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .check-icon {
+            color: #82c4a8;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .account-card.selected .check-icon {
+            opacity: 1;
+        }
+
+        /* Bouton d'accès */
+        .access-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .access-button {
+            flex: 1;
+            background: linear-gradient(135deg, #82c4a8, #4a9080);
+            border: none;
+            border-radius: 40px;
+            padding: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .access-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(130, 196, 168, 0.3);
+        }
+
+        .access-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #4a5c66;
+        }
+
+        /* Message d'erreur */
+        .error-message {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            border-radius: 40px;
+            padding: 0.8rem 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.9rem;
+            color: #ffb3b3;
+        }
+
+        .error-message i {
+            color: #ff6b6b;
+        }
+
+        /* Section des fonctionnalités */
+        .features-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card {
+            background: rgba(22, 34, 43, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(130, 196, 168, 0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(130, 196, 168, 0.3);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(130, 196, 168, 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            color: #82c4a8;
+            font-size: 1.8rem;
+        }
+
+        .feature-card h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .feature-card p {
+            font-size: 0.85rem;
+            color: #a0b8c7;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0 0;
+            border-top: 1px solid rgba(53, 79, 92, 0.3);
+            font-size: 0.85rem;
+            color: #6d8f9f;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: #a0b8c7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #82c4a8;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero-section {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero-left h1 {
+                font-size: 2.5rem;
+            }
+
+            .features-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .stats-mini {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-chess-knight fa-spin"></i>
+            <p>Chargement des données...</p>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-chess-queen"></i>
+            </div>
+            <h3>Contacter AlphaRomo604</h3>
+            <p>Vous allez être redirigé vers Chess.com pour envoyer un message privé.</p>
+            
+            <div class="chess-profile">
+                <div class="chess-avatar">A</div>
+                <div class="chess-info">
+                    <h4>AlphaRomo604</h4>
+                    <p>@alpharomo604 · En ligne</p>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-button secondary" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                    Annuler
+                </button>
+                <button class="modal-button primary" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                    Envoyer un message
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="container">
+        <!-- Navigation avec bouton de demande de compte -->
+        <nav class="nav-bar">
+            <div class="logo">
+                <i class="fas fa-chess-knight"></i>
+                <span>ChessDashboard</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active">Accueil</a>
+                <a href="classement.html" class="nav-link">Leaderboard</a>
+                <a href="apropos.html" class="nav-link">À propos</a>
+            </div>
+            <!-- Bouton jaune de demande de compte -->
+            <button class="request-button" onclick="openModal()">
+                <i class="fas fa-plus-circle"></i>
+                <span>Demander son compte</span>
+            </button>
+        </nav>
+
+        <!-- Section Héro avec sélecteur -->
+        <div class="hero-section">
+            <div class="hero-left">
+                <h1>Suivez votre progression aux échecs</h1>
+                <p>Analysez vos performances, fixez des objectifs et suivez votre évolution sur Chess.com et Lichess.</p>
+                
+                <div class="stats-mini" id="globalStats">
+                    <div class="stat-mini-item">
+                        <div class="stat-mini-icon">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <div class="stat-mini-info">
+                            <h4>Chargement...</h4>
+                            <p>...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-right">
+                <div class="selector-header">
+                    <div class="selector-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="selector-title">
+                        <h3>Sélectionnez un compte</h3>
+                        <p>Choisissez le profil à consulter</p>
+                    </div>
+                </div>
+
+                <!-- Message d'erreur -->
+                <div id="errorMessage" class="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <!-- Grille des comptes -->
+                <div class="accounts-grid" id="accountsContainer">
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-spinner fa-spin"></i> Chargement des comptes...
+                    </div>
+                </div>
+
+                <!-- Bouton d'accès -->
+                <div class="access-section">
+                    <button class="access-button" id="accessButton" disabled>
+                        <i class="fas fa-lock"></i>
+                        <span>Sélectionnez un compte</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fonctionnalités -->
+        <div class="features-section">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h4>Objectifs personnalisés</h4>
+                <p>Définissez vos propres objectifs ELO et suivez votre progression en temps réel</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h4>Statistiques détaillées</h4>
+                <p>Graphiques d'évolution, analyse des performances par catégorie</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h4>Dates limites</h4>
+                <p>Visualisez vos échéances et restez motivé pour atteindre vos buts</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div><i class="fa-regular fa-copyright"></i> AlphaRomo604 · 2026</div>
+            <div class="footer-links">
+                <a href="#">Confidentialité</a>
+                <a href="#">Conditions</a>
+                <a href="#" onclick="openModal(); return false;">Contact</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Fonctions pour le modal
+        function openModal() {
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        function sendMessage() {
+            // Redirection vers Chess.com pour envoyer un message
+            window.open('https://www.chess.com/member/alpharomo604', '_blank');
+            closeModal();
+        }
+
+        // Fermer le modal en cliquant en dehors
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('confirmModal');
+            const modalContent = document.querySelector('.modal-content');
+            
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // État
+        let accounts = [];
+        let selectedAccount = null;
+        let loadedAccounts = 0;
+        const totalAccounts = ACCOUNTS.length;
+
+        // Fonction pour charger un script
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Fonction pour charger les données d'un compte
+        async function loadAccountData(account) {
+            try {
+                await loadScript(account.dataFile);
+                const data = window.CHESS_DATA;
+                
+                accounts.push({
+                    ...account,
+                    data: data
+                });
+                
+            } catch (error) {
+                console.error(`Erreur chargement ${account.name}:`, error);
+                accounts.push({
+                    ...account,
+                    data: null,
+                    error: true
+                });
+            } finally {
+                loadedAccounts++;
+                if (loadedAccounts === totalAccounts) {
+                    finishLoading();
+                }
+            }
+        }
+
+        // Calculer les stats globales
+        function calculateGlobalStats() {
+            const activeAccounts = accounts.filter(a => a.status === 'active' && a.data);
+            
+            if (activeAccounts.length === 0) {
+                return {
+                    avgElo: 0,
+                    totalObjectives: 0,
+                    completedObjectives: 0,
+                    bestPlayer: null,
+                    bestElo: 0
+                };
+            }
+            
+            let totalElo = 0;
+            let totalObjectives = 0;
+            let completedObjectives = 0;
+            let bestElo = 0;
+            let bestPlayer = null;
+            
+            activeAccounts.forEach(account => {
+                const data = account.data;
+                
+                const bulletElo = data.elo.bullet.current;
+                const blitzElo = data.elo.blitz.current;
+                const rapideElo = data.elo.rapide.current;
+                const accountAvg = (bulletElo + blitzElo + rapideElo) / 3;
+                totalElo += accountAvg;
+                
+                if (bulletElo > bestElo) {
+                    bestElo = bulletElo;
+                    bestPlayer = account.name;
+                }
+                if (blitzElo > bestElo) {
+                    bestElo = blitzElo;
+                    bestPlayer = account.name;
+                }
+                if (rapideElo > bestElo) {
+                    bestElo = rapideElo;
+                    bestPlayer = account.name;
+                }
+                
+                totalObjectives += 3;
+                if (data.elo.bullet.current >= data.elo.bullet.target) completedObjectives++;
+                if (data.elo.blitz.current >= data.elo.blitz.target) completedObjectives++;
+                if (data.elo.rapide.current >= data.elo.rapide.target) completedObjectives++;
+            });
+            
+            return {
+                avgElo: Math.round(totalElo / activeAccounts.length),
+                totalObjectives,
+                completedObjectives,
+                bestPlayer,
+                bestElo
+            };
+        }
+
+        // Mettre à jour les stats globales
+        function updateGlobalStats() {
+            const stats = calculateGlobalStats();
+            const statsContainer = document.getElementById('globalStats');
+            
+            statsContainer.innerHTML = `
+                <div class="stat-mini-item">
+                    <div class="stat-mini-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-mini-info">
+                        <h4>Meilleur ELO</h4>
+                        <p>${stats.bestElo} <small>${stats.bestPlayer || ''}</small></p>
+                    </div>
+                </div>
+                <div class="stat-mini-item">
+                    <div class="stat-mini-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-mini-info">
+                        <h4>ELO Moyen</h4>
+                        <p>${stats.avgElo}</p>
+                    </div>
+                </div>
+                <div class="stat-mini-item">
+                    <div class="stat-mini-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-mini-info">
+                        <h4>Objectifs</h4>
+                        <p>${stats.completedObjectives}/${stats.totalObjectives}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Générer les cartes de comptes
+        function generateAccountCards() {
+            const container = document.getElementById('accountsContainer');
+            const visibleAccounts = accounts.filter(account => account.status !== 'banned');
+            
+            if (visibleAccounts.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #a0b8c7;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Aucun compte disponible</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = visibleAccounts.map(account => {
+                const avatar = AVATARS[account.avatarId] || AVATARS.default;
+                const isActive = account.status === 'active' && account.data;
+                const isSelected = selectedAccount?.id === account.id;
+                
+                let bulletElo = '?', blitzElo = '?';
+                if (account.data) {
+                    bulletElo = account.data.elo.bullet.current;
+                    blitzElo = account.data.elo.blitz.current;
+                }
+                
+                let statusBadge = '';
+                if (account.status === 'blocked') {
+                    statusBadge = '<span class="status-badge blocked"><i class="fas fa-lock"></i> Bloqué</span>';
+                } else if (account.status === 'loading') {
+                    statusBadge = '<span class="status-badge loading"><i class="fas fa-spinner fa-spin"></i> En cours</span>';
+                } else if (!account.data) {
+                    statusBadge = '<span class="status-badge loading"><i class="fas fa-exclamation-triangle"></i> Erreur</span>';
+                }
+                
+                return `
+                    <div class="account-card ${isActive ? '' : 'disabled'} ${isSelected ? 'selected' : ''}" 
+                         data-account="${account.id}"
+                         data-status="${account.status}"
+                         onclick="selectAccount('${account.id}')">
+                        <div class="account-avatar">
+                            ${avatar.path 
+                                ? `<img src="${avatar.path}" alt="${account.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'avatar-fallback\\' style=\\'background:${avatar.bgColor};\\'>${avatar.fallback}</div>';">`
+                                : `<div class="avatar-fallback" style="background: ${avatar.bgColor};">${avatar.fallback}</div>`
+                            }
+                        </div>
+                        <div class="account-info">
+                            <div class="account-name">
+                                ${account.name}
+                                ${statusBadge}
+                            </div>
+                            <div class="account-handle">${account.handle}</div>
+                            ${isActive ? `
+                                <div class="account-stats">
+                                    <span><i class="fas fa-bolt" style="color: #ffb347;"></i> ${blitzElo}</span>
+                                    <span><i class="fas fa-clock" style="color: #4bc0c0;"></i> ${bulletElo}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <i class="fas fa-check-circle check-icon"></i>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Sélectionner un compte
+        function selectAccount(accountId) {
+            const account = accounts.find(a => a.id === accountId);
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const accessButton = document.getElementById('accessButton');
+            
+            if (!account) return;
+            
+            errorMessage.style.display = 'none';
+            
+            if (account.status !== 'active' || !account.data) {
+                let message = '';
+                if (account.status === 'blocked') {
+                    message = `Le compte ${account.name} est actuellement bloqué.`;
+                } else if (account.status === 'loading') {
+                    message = `Le compte ${account.name} est en cours de configuration.`;
+                } else if (!account.data) {
+                    message = `Le compte ${account.name} a rencontré une erreur de chargement.`;
+                }
+                
+                errorText.textContent = message;
+                errorMessage.style.display = 'flex';
+                selectedAccount = null;
+                accessButton.disabled = true;
+                accessButton.innerHTML = '<i class="fas fa-lock"></i><span>Sélectionnez un compte</span>';
+                generateAccountCards();
+                return;
+            }
+            
+            selectedAccount = account;
+            accessButton.disabled = false;
+            accessButton.innerHTML = '<i class="fas fa-arrow-right"></i><span>Accéder au tableau de bord</span>';
+            generateAccountCards();
+        }
+
+        // Accéder au dashboard
+        function accessDashboard() {
+            if (!selectedAccount) return;
+            window.location.href = `index.html?account=${selectedAccount.id}`;
+        }
+
+        // Fin du chargement
+        function finishLoading() {
+            updateGlobalStats();
+            generateAccountCards();
+            
+            const defaultAccount = accounts.find(a => a.status === 'active' && a.data);
+            if (defaultAccount) {
+                selectAccount(defaultAccount.id);
+            }
+            
+            document.getElementById('loadingOverlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('container').classList.add('loaded');
+            }, 300);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            for (const account of ACCOUNTS) {
+                await loadAccountData(account);
+            }
+            
+            document.getElementById('accessButton').addEventListener('click', accessDashboard);
+        });
+
+        window.selectAccount = selectAccount;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.sendMessage = sendMessage;
+    </script>
+</body>
+</html>

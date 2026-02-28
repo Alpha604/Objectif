@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Dashboard · Leaderboard</title>
+    
+    <!-- REDIRECTION MOBILE -->
+    <script>
+        if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "tel.html";
+        }
+    </script>
+
+    <!-- Inter font + icônes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Configuration des photos de profil -->
+    <script src="pdp.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 18, 25, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-spinner {
+            background: rgba(30, 44, 52, 0.9);
+            padding: 2rem;
+            border-radius: 32px;
+            border: 1px solid #82c4a8;
+            text-align: center;
+        }
+
+        .loading-spinner i {
+            font-size: 3rem;
+            color: #82c4a8;
+            margin-bottom: 1rem;
+        }
+
+        .loading-spinner p {
+            color: #e6edf3;
+            font-weight: 500;
+        }
+
+        /* Fond avec effet de plateau d'échecs */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 30%, rgba(130, 196, 168, 0.03) 0%, transparent 30%),
+                radial-gradient(circle at 75% 70%, rgba(130, 196, 168, 0.03) 0%, transparent 30%),
+                repeating-linear-gradient(45deg, rgba(53, 79, 92, 0.1) 0px, rgba(53, 79, 92, 0.1) 2px, transparent 2px, transparent 8px);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .container.loaded {
+            opacity: 1;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding: 0.5rem 1rem;
+            background: rgba(30, 44, 52, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 60px;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .logo i {
+            color: #82c4a8;
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            color: #a0b8c7;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(130, 196, 168, 0.1);
+            color: #e6edf3;
+        }
+
+        .nav-link.active {
+            background: #82c4a8;
+            color: #0b1219;
+        }
+
+        /* En-tête */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #82c4a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            color: #a0b8c7;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Tabs pour les catégories */
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .category-tab {
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            background: rgba(30, 44, 52, 0.6);
+            border: 1px solid #354f5c;
+            color: #a0b8c7;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-tab i {
+            font-size: 1.1rem;
+        }
+
+        .category-tab:hover {
+            border-color: #82c4a8;
+            color: #e6edf3;
+            transform: translateY(-2px);
+        }
+
+        .category-tab.active {
+            background: #82c4a8;
+            border-color: #82c4a8;
+            color: #0b1219;
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            background: rgba(22, 34, 43, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 2rem;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            margin-bottom: 3rem;
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.5);
+        }
+
+        .leaderboard-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .leaderboard-header h2 i {
+            color: #82c4a8;
+        }
+
+        .last-update {
+            font-size: 0.85rem;
+            color: #a0b8c7;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Podium */
+        .podium {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding: 1rem;
+        }
+
+        .podium-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .podium-item.first {
+            transform: scale(1.1);
+        }
+
+        .podium-rank {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .podium-rank.first {
+            background: #ffd700;
+            color: #0b1219;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .podium-rank.second {
+            background: #c0c0c0;
+            color: #0b1219;
+            box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
+        }
+
+        .podium-rank.third {
+            background: #cd7f32;
+            color: #0b1219;
+            box-shadow: 0 0 20px rgba(205, 127, 50, 0.3);
+        }
+
+        .podium-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border: 3px solid transparent;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .podium-item.first .podium-avatar {
+            border-color: #ffd700;
+            width: 100px;
+            height: 100px;
+        }
+
+        .podium-item.second .podium-avatar {
+            border-color: #c0c0c0;
+        }
+
+        .podium-item.third .podium-avatar {
+            border-color: #cd7f32;
+        }
+
+        .podium-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 32px;
+            color: #ffffff;
+        }
+
+        .podium-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 0.3rem;
+        }
+
+        .podium-elo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .podium-item.first .podium-elo {
+            color: #ffd700;
+            font-size: 2rem;
+        }
+
+        .podium-item.second .podium-elo {
+            color: #c0c0c0;
+        }
+
+        .podium-item.third .podium-elo {
+            color: #cd7f32;
+        }
+
+        .podium-handle {
+            font-size: 0.85rem;
+            color: #a0b8c7;
+        }
+
+        /* Tableau */
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ranking-table th {
+            text-align: left;
+            padding: 1rem 0.5rem;
+            color: #a0b8c7;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.5);
+        }
+
+        .ranking-table td {
+            padding: 1rem 0.5rem;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.2);
+        }
+
+        .ranking-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ranking-table tr:hover td {
+            background: rgba(130, 196, 168, 0.05);
+        }
+
+        .rank-cell {
+            width: 60px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .rank-1 {
+            color: #ffd700;
+        }
+        .rank-2 {
+            color: #c0c0c0;
+        }
+        .rank-3 {
+            color: #cd7f32;
+        }
+
+        .player-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .player-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #253b47;
+            border: 2px solid transparent;
+        }
+
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .player-handle {
+            font-size: 0.8rem;
+            color: #a0b8c7;
+        }
+
+        .elo-cell {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .progress-cell {
+            width: 150px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #1f313c;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.3rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: #a0b8c7;
+        }
+
+        .trend-up {
+            color: #4bc0c0;
+        }
+        .trend-down {
+            color: #ff6b6b;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .badge-gold {
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .badge-silver {
+            background: rgba(192, 192, 192, 0.1);
+            color: #c0c0c0;
+            border: 1px solid rgba(192, 192, 192, 0.3);
+        }
+
+        .badge-bronze {
+            background: rgba(205, 127, 50, 0.1);
+            color: #cd7f32;
+            border: 1px solid rgba(205, 127, 50, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 0 0;
+            border-top: 1px solid rgba(53, 79, 92, 0.3);
+            font-size: 0.85rem;
+            color: #6d8f9f;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: #a0b8c7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #82c4a8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .podium {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .podium-item.first {
+                transform: scale(1);
+                order: -1;
+            }
+
+            .category-tabs {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .ranking-table {
+                font-size: 0.85rem;
+            }
+
+            .player-cell {
+                gap: 0.5rem;
+            }
+
+            .player-avatar {
+                width: 30px;
+                height: 30px;
+            }
+
+            .progress-cell {
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-chess-knight fa-spin"></i>
+            <p>Chargement des données...</p>
+        </div>
+    </div>
+
+    <div class="container" id="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <div class="logo">
+                <i class="fas fa-chess-knight"></i>
+                <span>ChessDashboard</span>
+            </div>
+            <div class="nav-links">
+                <a href="accueil.html" class="nav-link">Accueil</a>
+                <a href="#" class="nav-link active">Leaderboard</a>
+                <a href="apropos.html" class="nav-link">À propos</a>
+            </div>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="page-header">
+            <h1>Leaderboard</h1>
+            <p>Classement des meilleurs joueurs par catégorie</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="category-tabs">
+            <button class="category-tab active" onclick="switchCategory('bullet')">
+                <i class="fas fa-clock"></i>
+                Bullet
+            </button>
+            <button class="category-tab" onclick="switchCategory('blitz')">
+                <i class="fas fa-bolt"></i>
+                Blitz
+            </button>
+            <button class="category-tab" onclick="switchCategory('rapide')">
+                <i class="fas fa-hourglass-half"></i>
+                Rapide
+            </button>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard">
+            <div class="leaderboard-header">
+                <h2 id="categoryTitle">
+                    <i class="fas fa-clock"></i>
+                    Classement Bullet
+                </h2>
+                <div class="last-update" id="lastUpdate">
+                    <i class="fas fa-calendar-alt"></i>
+                    Chargement...
+                </div>
+            </div>
+
+            <!-- Podium -->
+            <div class="podium" id="podium">
+                <div class="podium-item second">
+                    <div class="podium-rank second">2</div>
+                    <div class="podium-avatar">
+                        <div class="avatar-fallback">?</div>
+                    </div>
+                    <div class="podium-name">Chargement...</div>
+                    <div class="podium-elo">-</div>
+                    <div class="podium-handle">@...</div>
+                </div>
+                <div class="podium-item first">
+                    <div class="podium-rank first">1</div>
+                    <div class="podium-avatar">
+                        <div class="avatar-fallback">?</div>
+                    </div>
+                    <div class="podium-name">Chargement...</div>
+                    <div class="podium-elo">-</div>
+                    <div class="podium-handle">@...</div>
+                </div>
+                <div class="podium-item third">
+                    <div class="podium-rank third">3</div>
+                    <div class="podium-avatar">
+                        <div class="avatar-fallback">?</div>
+                    </div>
+                    <div class="podium-name">Chargement...</div>
+                    <div class="podium-elo">-</div>
+                    <div class="podium-handle">@...</div>
+                </div>
+            </div>
+
+            <!-- Tableau complet -->
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>Rang</th>
+                        <th>Joueur</th>
+                        <th>ELO</th>
+                        <th>Objectif</th>
+                        <th>Progression</th>
+                        <th>Tendance</th>
+                    </tr>
+                </thead>
+                <tbody id="rankingBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-spinner fa-spin"></i> Chargement des données...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div><i class="fa-regular fa-copyright"></i> AlphaRomo604 · 2026</div>
+            <div class="footer-links">
+                <a href="#">Confidentialité</a>
+                <a href="#">Conditions</a>
+                <a href="#">Aide</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // État
+        let players = [];
+        let currentCategory = 'bullet';
+        let loadedAccounts = 0;
+        const totalAccounts = ACCOUNTS.filter(a => a.status === 'active').length;
+
+        // Fonction pour charger un script
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Fonction pour charger les données d'un compte
+        async function loadAccountData(account) {
+            try {
+                await loadScript(account.dataFile);
+                const data = window.CHESS_DATA;
+                
+                // Ajouter le joueur à la liste
+                players.push({
+                    id: account.id,
+                    name: account.name,
+                    handle: account.handle,
+                    avatarId: account.avatarId,
+                    palette: account.palette,
+                    stats: {
+                        bullet: data.elo.bullet.current,
+                        blitz: data.elo.blitz.current,
+                        rapide: data.elo.rapide.current
+                    },
+                    objectives: {
+                        bullet: data.elo.bullet.target,
+                        blitz: data.elo.blitz.target,
+                        rapide: data.elo.rapide.target
+                    },
+                    progression: {
+                        bullet: `+${data.elo.bullet.target - data.elo.bullet.current}`,
+                        blitz: `+${data.elo.blitz.target - data.elo.blitz.current}`,
+                        rapide: `+${data.elo.rapide.target - data.elo.rapide.current}`
+                    },
+                    trend: 'up',
+                    color: COLOR_PALETTES[account.palette]?.primary || '#82c4a8'
+                });
+                
+                loadedAccounts++;
+                
+                // Mettre à jour la date
+                if (data.lastUpdate) {
+                    const [year, month, day] = data.lastUpdate.split('-');
+                    const months = ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
+                    document.getElementById('lastUpdate').innerHTML = `
+                        <i class="fas fa-calendar-alt"></i>
+                        Mis à jour le ${parseInt(day)} ${months[parseInt(month)-1]} ${year}
+                    `;
+                }
+                
+                // Si tous les comptes sont chargés, afficher
+                if (loadedAccounts === totalAccounts) {
+                    finishLoading();
+                }
+                
+            } catch (error) {
+                console.error(`Erreur chargement ${account.name}:`, error);
+                loadedAccounts++;
+                if (loadedAccounts === totalAccounts) {
+                    finishLoading();
+                }
+            }
+        }
+
+        // Fonction pour finir le chargement
+        function finishLoading() {
+            // Trier les joueurs par ELO bullet (pour l'affichage par défaut)
+            players.sort((a, b) => b.stats.bullet - a.stats.bullet);
+            
+            // Mettre à jour l'affichage
+            updateLeaderboard(currentCategory);
+            
+            // Cacher le loading
+            document.getElementById('loadingOverlay').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('container').classList.add('loaded');
+            }, 300);
+        }
+
+        // Fonction pour obtenir l'avatar
+        function getAvatarHtml(avatarId, name, size = 'normal') {
+            const avatar = AVATARS[avatarId] || AVATARS.default;
+            if (avatar.path) {
+                return `<img src="${avatar.path}" alt="${name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'avatar-fallback\\' style=\\'background:${avatar.bgColor};\\'>${avatar.fallback}</div>';">`;
+            } else {
+                return `<div class="avatar-fallback" style="background: ${avatar.bgColor};">${avatar.fallback}</div>`;
+            }
+        }
+
+        // Fonction pour obtenir la classe de rang
+        function getRankClass(index) {
+            if (index === 0) return 'rank-1';
+            if (index === 1) return 'rank-2';
+            if (index === 2) return 'rank-3';
+            return '';
+        }
+
+        // Fonction pour obtenir le badge
+        function getRankBadge(index) {
+            if (index === 0) return '<span class="badge badge-gold"><i class="fas fa-crown"></i> 1er</span>';
+            if (index === 1) return '<span class="badge badge-silver"><i class="fas fa-medal"></i> 2ème</span>';
+            if (index === 2) return '<span class="badge badge-bronze"><i class="fas fa-medal"></i> 3ème</span>';
+            return '';
+        }
+
+        // Fonction pour obtenir l'icône de tendance
+        function getTrendIcon(trend, value) {
+            if (trend === 'up') {
+                return `<i class="fas fa-arrow-up trend-up"></i> ${value}`;
+            }
+            if (trend === 'down') {
+                return `<i class="fas fa-arrow-down trend-down"></i> ${value}`;
+            }
+            return `<i class="fas fa-minus trend-neutral"></i> ${value}`;
+        }
+
+        // Mettre à jour le leaderboard
+        function updateLeaderboard(category) {
+            currentCategory = category;
+            
+            // Mettre à jour le titre
+            const titleMap = {
+                bullet: { icon: 'fa-clock', text: 'Classement Bullet' },
+                blitz: { icon: 'fa-bolt', text: 'Classement Blitz' },
+                rapide: { icon: 'fa-hourglass-half', text: 'Classement Rapide' }
+            };
+            
+            document.getElementById('categoryTitle').innerHTML = `
+                <i class="fas ${titleMap[category].icon}"></i>
+                ${titleMap[category].text}
+            `;
+            
+            // Trier les joueurs
+            const sorted = [...players].sort((a, b) => b.stats[category] - a.stats[category]);
+            
+            // Générer le podium
+            const podium = document.getElementById('podium');
+            podium.innerHTML = `
+                <div class="podium-item second">
+                    <div class="podium-rank second">2</div>
+                    <div class="podium-avatar">
+                        ${getAvatarHtml(sorted[1]?.avatarId, sorted[1]?.name)}
+                    </div>
+                    <div class="podium-name">${sorted[1]?.name || '---'}</div>
+                    <div class="podium-elo">${sorted[1]?.stats[category] || '-'}</div>
+                    <div class="podium-handle">${sorted[1]?.handle || '@...'}</div>
+                </div>
+                <div class="podium-item first">
+                    <div class="podium-rank first">1</div>
+                    <div class="podium-avatar">
+                        ${getAvatarHtml(sorted[0]?.avatarId, sorted[0]?.name)}
+                    </div>
+                    <div class="podium-name">${sorted[0]?.name || '---'}</div>
+                    <div class="podium-elo">${sorted[0]?.stats[category] || '-'}</div>
+                    <div class="podium-handle">${sorted[0]?.handle || '@...'}</div>
+                </div>
+                <div class="podium-item third">
+                    <div class="podium-rank third">3</div>
+                    <div class="podium-avatar">
+                        ${getAvatarHtml(sorted[2]?.avatarId, sorted[2]?.name)}
+                    </div>
+                    <div class="podium-name">${sorted[2]?.name || '---'}</div>
+                    <div class="podium-elo">${sorted[2]?.stats[category] || '-'}</div>
+                    <div class="podium-handle">${sorted[2]?.handle || '@...'}</div>
+                </div>
+            `;
+            
+            // Générer le tableau
+            const tbody = document.getElementById('rankingBody');
+            tbody.innerHTML = sorted.map((player, index) => {
+                const progress = ((player.stats[category] / player.objectives[category]) * 100).toFixed(1);
+                const remaining = player.objectives[category] - player.stats[category];
+                
+                return `
+                    <tr>
+                        <td class="rank-cell ${getRankClass(index)}">#${index + 1}</td>
+                        <td>
+                            <div class="player-cell">
+                                <div class="player-avatar">
+                                    ${getAvatarHtml(player.avatarId, player.name)}
+                                </div>
+                                <div class="player-info">
+                                    <span class="player-name">${player.name}</span>
+                                    <span class="player-handle">${player.handle}</span>
+                                </div>
+                                ${getRankBadge(index)}
+                            </div>
+                        </td>
+                        <td class="elo-cell" style="color: ${player.color};">${player.stats[category]}</td>
+                        <td>${player.objectives[category]}</td>
+                        <td>
+                            <div class="progress-cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progress}%; background: ${player.color};"></div>
+                                </div>
+                                <div class="progress-text">${progress}% (reste ${remaining})</div>
+                            </div>
+                        </td>
+                        <td>${getTrendIcon(player.trend, player.progression[category])}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Changer de catégorie
+        function switchCategory(category) {
+            document.querySelectorAll('.category-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateLeaderboard(category);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Charger les données de tous les comptes actifs
+            const activeAccounts = ACCOUNTS.filter(a => a.status === 'active');
+            
+            for (const account of activeAccounts) {
+                await loadAccountData(account);
+            }
+            
+            // Si aucun compte actif, finir quand même
+            if (activeAccounts.length === 0) {
+                finishLoading();
+            }
+        });
+    </script>
+</body>
+</html>
