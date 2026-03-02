@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page introuvable · AlphaRomo604</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .container {
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 8rem;
+            font-weight: 700;
+            color: #82c4a8;
+            line-height: 1;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(130, 196, 168, 0.3);
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #a0b8c7;
+            margin-bottom: 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #82c4a8;
+            color: #0b1219;
+            text-decoration: none;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: #6aab8f;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .back-link {
+            margin-top: 2rem;
+        }
+
+        .back-link a {
+            color: #a0b8c7;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link a:hover {
+            color: #82c4a8;
+        }
+
+        .footer {
+            margin-top: 4rem;
+            color: #4a6b7c;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>404</h1>
+        <h2>Page introuvable</h2>
+        <p>La page que vous recherchez n'existe pas ou a été déplacée.</p>
+        
+        <a href="index.html" class="btn">
+            <i class="fas fa-chess-board"></i>
+            Retour au tableau de bord
+        </a>
+        
+        <div class="back-link">
+            <a href="#" onclick="history.back(); return false;">
+                <i class="fas fa-arrow-left"></i>
+                Page précédente
+            </a>
+        </div>
+
+        <div class="footer">
+            AlphaRomo604 · 2026
+        </div>
+    </div>
+</body>
+</html>
