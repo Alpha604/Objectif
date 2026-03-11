@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Échecs · Sélecteur de compte</title>
+    
+    <!-- REDIRECTION MOBILE -->
+    <script>
+        if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "tel.html";
+        }
+    </script>
+
+    <!-- Inter font + icônes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js avec plugin annotation -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    
+    <!-- Configuration des photos de profil -->
+    <script src="pdp.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .dashboard {
+            max-width: 1440px;
+            width: 100%;
+        }
+
+        /* HEADER AVEC MENU DÉROULANT AU PREMIER PLAN */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(18, 28, 36, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(130, 196, 168, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Logo / Titre */
+        .title-block {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #1e2c34, #1a2f3a);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(130, 196, 168, 0.3);
+        }
+
+        .logo-icon i {
+            color: #82c4a8;
+            font-size: 1.6rem;
+        }
+
+        .title-text h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #ffffff;
+            line-height: 1.2;
+        }
+
+        .title-text span {
+            font-size: 0.85rem;
+            color: #82c4a8;
+            font-weight: 500;
+            display: block;
+        }
+
+        /* Cache l'ancien titre mais garde l'ID pour le JS */
+        #accountDisplayName {
+            display: none;
+        }
+
+        /* Zone droite */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        /* Bouton retour au menu */
+        .menu-button {
+            width: 45px;
+            height: 45px;
+            background: rgba(30, 44, 52, 0.8);
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0b8c7;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .menu-button:hover {
+            border-color: #82c4a8;
+            color: #82c4a8;
+            background: rgba(37, 59, 71, 0.9);
+            transform: translateY(-2px);
+        }
+
+        /* Badges */
+        .stat-badges {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .stat-badge {
+            background: rgba(30, 44, 52, 0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 40px;
+            padding: 0.5rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: #e6edf3;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .stat-badge:hover {
+            border-color: rgba(130, 196, 168, 0.5);
+            background: rgba(37, 59, 71, 0.7);
+        }
+
+        .stat-badge i {
+            color: #82c4a8;
+        }
+
+        /* Indicateur d'état API - Mode online */
+        .api-status {
+            position: relative;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .api-status-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(30, 44, 52, 0.8);
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #82c4a8;
+            font-size: 1.2rem;
+            cursor: help;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .api-status-indicator.online {
+            color: #82c4a8;
+            border-color: #82c4a8;
+            animation: pulseOnline 2s infinite;
+        }
+
+        .api-status-indicator.offline {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .api-status-indicator.loading {
+            color: #ffb347;
+            border-color: #ffb347;
+        }
+
+        .api-status-indicator.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes pulseOnline {
+            0% { box-shadow: 0 0 0 0 rgba(130, 196, 168, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(130, 196, 168, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(130, 196, 168, 0); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tooltip API */
+        .api-status-tooltip {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 280px;
+            background: rgba(22, 34, 43, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(130, 196, 168, 0.3);
+            border-radius: 16px;
+            padding: 1rem;
+            z-index: 10000;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .api-status:hover .api-status-tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.5);
+            margin-bottom: 0.8rem;
+        }
+
+        .tooltip-header i {
+            color: #82c4a8;
+            font-size: 1rem;
+        }
+
+        .tooltip-header span {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        .tooltip-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .tooltip-label {
+            color: #a0b8c7;
+        }
+
+        .tooltip-value {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .tooltip-value.success {
+            color: #82c4a8;
+        }
+
+        .tooltip-value.warning {
+            color: #ffb347;
+        }
+
+        .tooltip-value.error {
+            color: #ff6b6b;
+        }
+
+        .tooltip-footer {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            border-radius: 8px;
+            padding: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #ffb3b3;
+            margin-top: 0.5rem;
+        }
+
+        .tooltip-footer i {
+            color: #ff6b6b;
+            font-size: 0.8rem;
+        }
+
+        /* Indicateur d'état Manuel */
+        .manual-status {
+            position: relative;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .manual-status-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(30, 44, 52, 0.8);
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0b8c7;
+            font-size: 1.2rem;
+            cursor: help;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .manual-status-indicator.manual {
+            color: #a0b8c7;
+            border-color: #a0b8c7;
+        }
+
+        .manual-status-indicator.static {
+            color: #4bc0c0;
+            border-color: #4bc0c0;
+        }
+
+        .manual-status-indicator i {
+            font-size: 1.1rem;
+        }
+
+        /* Tooltip Manuel */
+        .manual-status-tooltip {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 280px;
+            background: rgba(22, 34, 43, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(160, 184, 199, 0.3);
+            border-radius: 16px;
+            padding: 1rem;
+            z-index: 10000;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .manual-status:hover .manual-status-tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .manual-tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.5);
+            margin-bottom: 0.8rem;
+        }
+
+        .manual-tooltip-header i {
+            color: #a0b8c7;
+            font-size: 1rem;
+        }
+
+        .manual-tooltip-header span {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        .manual-tooltip-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .manual-tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .manual-tooltip-label {
+            color: #a0b8c7;
+        }
+
+        .manual-tooltip-value {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .manual-tooltip-value.static {
+            color: #4bc0c0;
+        }
+
+        .manual-tooltip-footer {
+            background: rgba(75, 192, 192, 0.1);
+            border: 1px solid #4bc0c0;
+            border-radius: 8px;
+            padding: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #4bc0c0;
+            margin-top: 0.8rem;
+        }
+
+        .manual-tooltip-footer i {
+            color: #4bc0c0;
+            font-size: 0.8rem;
+        }
+
+        /* Sélecteur de compte - avec z-index élevé pour le dropdown */
+        .account-selector {
+            position: relative;
+            min-width: 280px;
+            font-family: 'Inter', sans-serif;
+            z-index: 1000; /* Plus haut que le header */
+        }
+
+        .select-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 44, 52, 0.8);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            border-radius: 14px;
+            padding: 6px 8px 6px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .select-button:hover {
+            border-color: #82c4a8;
+            background: rgba(37, 59, 71, 0.9);
+        }
+
+        .select-button.open {
+            border-color: #82c4a8;
+        }
+
+        .selected-account {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .account-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #253b47;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #82c4a8;
+        }
+
+        .account-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .account-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.3;
+        }
+
+        .account-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #ffffff;
+        }
+
+        .account-handle {
+            font-size: 11px;
+            color: #a0b8c7;
+        }
+
+        .dropdown-arrow {
+            width: 28px;
+            height: 28px;
+            background: rgba(130, 196, 168, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #82c4a8;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .select-button:hover .dropdown-arrow {
+            background: rgba(130, 196, 168, 0.2);
+        }
+
+        .select-button.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Dropdown avec z-index très élevé pour être au premier plan */
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            left: auto;
+            width: 100%;
+            background: rgba(22, 34, 43, 0.98);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(130, 196, 168, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            z-index: 9999; /* Très haut pour être au-dessus de tout */
+            display: none;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(130, 196, 168, 0.15);
+        }
+
+        .dropdown-item.selected {
+            background: rgba(130, 196, 168, 0.2);
+            border-left-color: #82c4a8;
+        }
+
+        .dropdown-item .account-avatar {
+            width: 36px;
+            height: 36px;
+        }
+
+        .dropdown-item .account-info {
+            flex: 1;
+        }
+
+        .dropdown-item .account-name {
+            font-size: 13px;
+        }
+
+        .dropdown-item .account-handle {
+            font-size: 10px;
+        }
+
+        .dropdown-item.disabled {
+            opacity: 0.7;
+        }
+
+        .dropdown-item.disabled:hover {
+            background: transparent !important;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #a0b8c7;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        /* Le reste du CSS reste identique */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .elo-card {
+            background: rgba(22, 34, 43, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 2rem 1.8rem;
+            border: 1px solid rgba(42, 64, 77, 0.5);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .elo-card:hover {
+            border-color: #82c4a8;
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .mode-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-header i {
+            font-size: 1.6rem;
+            color: #82c4a8;
+            background: rgba(30, 51, 62, 0.5);
+            padding: 10px;
+            border-radius: 18px;
+        }
+
+        .mode-header h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #e6edf3;
+        }
+
+        .elo-values {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 1.2rem 0 1rem;
+        }
+
+        .current-elo {
+            font-size: 3.2rem;
+            font-weight: 600;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+
+        .target-elo {
+            font-size: 1.4rem;
+            color: #a0b8c7;
+        }
+
+        .target-elo span {
+            color: #82c4a8;
+            font-weight: 600;
+            margin-left: 0.3rem;
+        }
+
+        .progress-wrapper {
+            margin: 1.2rem 0 0.8rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #a0b8c7;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-bar-bg {
+            height: 0.6rem;
+            background: #1f313c;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #82c4a8;
+            border-radius: 20px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-note {
+            display: inline-block;
+            margin-top: 1.2rem;
+            background: rgba(30, 51, 62, 0.5);
+            color: #cfdee9;
+            border-radius: 40px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #3a5768;
+        }
+
+        .goal-note i {
+            margin-right: 6px;
+            color: #82c4a8;
+        }
+
+        .deadline-note {
+            display: inline-block;
+            margin-top: 0.8rem;
+            background: rgba(30, 51, 62, 0.5);
+            color: #cfdee9;
+            border-radius: 40px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #3a5768;
+        }
+        
+        .deadline-note i {
+            margin-right: 6px;
+            color: #82c4a8;
+        }
+        
+        .deadline-urgent {
+            background: rgba(62, 42, 42, 0.5);
+            border-color: #ff6b6b;
+            color: #ffb3b3;
+        }
+        
+        .deadline-urgent i {
+            color: #ff6b6b;
+        }
+        
+        .deadline-warning {
+            background: rgba(62, 53, 42, 0.5);
+            border-color: #ffb347;
+            color: #ffd966;
+        }
+        
+        .deadline-warning i {
+            color: #ffb347;
+        }
+        
+        .deadline-expired {
+            background: rgba(58, 30, 30, 0.5);
+            border-color: #dc143c;
+            color: #ff8a8a;
+        }
+        
+        .deadline-expired i {
+            color: #dc143c;
+        }
+
+        .bottom-panel {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .timeline-card, .chart-card {
+            background: rgba(22, 34, 43, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 2rem;
+            border: 1px solid rgba(42, 64, 77, 0.5);
+        }
+
+        .timeline-card h3, .chart-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #a0b8c7;
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .timeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 1px solid #253b47;
+            padding-bottom: 1rem;
+        }
+
+        .timeline-icon {
+            width: 2.8rem;
+            height: 2.8rem;
+            background: rgba(30, 51, 62, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #82c4a8;
+            font-size: 1.2rem;
+        }
+
+        .timeline-content p {
+            font-weight: 500;
+            color: #e6edf3;
+            font-size: 0.95rem;
+        }
+
+        .timeline-content small {
+            color: #a0b8c7;
+            font-size: 0.75rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 260px;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 1.8rem;
+            justify-content: flex-end;
+            font-size: 0.85rem;
+            color: #a0b8c7;
+        }
+
+        .chart-legend span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .legend-color.dashed {
+            background: transparent !important;
+            border: 2px dashed #737572 !important;
+            width: 20px;
+            height: 0px;
+            position: relative;
+        }
+
+        .footnote-motivation {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .achievement-banner {
+            background: rgba(26, 47, 58, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 60px;
+            padding: 0.8rem 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid #4b7a8c;
+            color: #e6edf3;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .achievement-banner i {
+            color: #ffd966;
+        }
+
+        .footer-info {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #6d8f9f;
+            font-size: 0.8rem;
+            border-top: 1px solid #253b47;
+            padding-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .footer-link {
+            text-decoration: none;
+            color: #a0b8c7;
+            font-weight: 500;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            background: rgba(30, 44, 52, 0.5);
+            border: 1px solid #354f5c;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+        .footer-link:hover {
+            border-color: #82c4a8;
+            color: #e6edf3;
+            background: rgba(30, 44, 52, 0.8);
+        }
+
+        .last-update {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #a0b8c7;
+            background: rgba(30, 44, 52, 0.5);
+            padding: 0.4rem 1.2rem;
+            border-radius: 30px;
+            border: 1px solid #354f5c;
+        }
+
+        .last-update i {
+            color: #82c4a8;
+        }
+
+        @media (max-width: 950px) {
+            .grid-cards {
+                grid-template-columns: 1fr;
+            }
+            .bottom-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .header-right {
+                margin-left: 0;
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .stat-badges {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .account-selector {
+                width: 100%;
+            }
+            
+            .menu-button {
+                width: 100%;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- HEADER AVEC MENU DÉROULANT AU PREMIER PLAN -->
+        <div class="header-section">
+            <div class="title-block">
+                <div class="logo-icon">
+                    <i class="fas fa-chess-knight"></i>
+                </div>
+                <div class="title-text">
+                    <!-- ID conservé pour le JS mais caché par CSS -->
+                    <h1><span id="accountDisplayName">AlphaRomo604</span></h1>
+                    <span>Tableau de bord</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <!-- Bouton retour au menu -->
+                <a href="accueil.html" class="menu-button" title="Retour au menu principal">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+                
+                <div class="stat-badges" id="headerBadges"></div>
+                
+                <!-- Indicateur d'état API - Mode online -->
+                <div class="api-status" id="apiStatus" style="display: none;">
+                    <div class="api-status-indicator" id="apiStatusIndicator">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="api-status-tooltip" id="apiStatusTooltip">
+                        <div class="tooltip-header">
+                            <i class="fas fa-cloud"></i>
+                            <span>Mode online</span>
+                        </div>
+                        <div class="tooltip-content">
+                            <div class="tooltip-row">
+                                <span class="tooltip-label">Statut API:</span>
+                                <span class="tooltip-value" id="apiStatusText">Vérification...</span>
+                            </div>
+                            <div class="tooltip-row">
+                                <span class="tooltip-label">Dernière mise à jour:</span>
+                                <span class="tooltip-value" id="apiLastUpdate">-</span>
+                            </div>
+                            <div class="tooltip-row">
+                                <span class="tooltip-label">Source ELO:</span>
+                                <span class="tooltip-value" id="apiSource">Chess.com</span>
+                            </div>
+                        </div>
+                        <div class="tooltip-footer" id="apiErrorDetail" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="apiErrorMessage"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicateur d'état Manuel -->
+                <div class="manual-status" id="manualStatus" style="display: none;">
+                    <div class="manual-status-indicator" id="manualStatusIndicator">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="manual-status-tooltip" id="manualStatusTooltip">
+                        <div class="manual-tooltip-header">
+                            <i class="fas fa-database"></i>
+                            <span>Mode manuel</span>
+                        </div>
+                        <div class="manual-tooltip-content">
+                            <div class="manual-tooltip-row">
+                                <span class="manual-tooltip-label">Source:</span>
+                                <span class="manual-tooltip-value static" id="manualSource">Fichiers statiques</span>
+                            </div>
+                            <div class="manual-tooltip-row">
+                                <span class="manual-tooltip-label">Dernière mise à jour:</span>
+                                <span class="manual-tooltip-value" id="manualLastUpdate">-</span>
+                            </div>
+                            <div class="manual-tooltip-row">
+                                <span class="manual-tooltip-label">Type:</span>
+                                <span class="manual-tooltip-value" id="manualType">Données manuelles</span>
+                            </div>
+                        </div>
+                        <div class="manual-tooltip-footer">
+                            <i class="fas fa-info-circle"></i>
+                            <span>ELO définis manuellement dans les fichiers</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="account-selector">
+                    <div class="custom-select">
+                        <div class="select-button" id="selectButton">
+                            <div class="selected-account" id="selectedAccount">
+                                <div class="account-avatar" id="selectedAvatar">
+                                    <!-- Avatar sera chargé dynamiquement -->
+                                </div>
+                                <div class="account-info">
+                                    <span class="account-name" id="selectedName">AlphaRomo604</span>
+                                    <span class="account-handle" id="selectedHandle">@alpharomo604</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-arrow">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <!-- Les options seront générées par JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESTE DU CONTENU -->
+        <div class="grid-cards" id="eloCardsContainer"></div>
+
+        <div class="bottom-panel">
+            <div class="timeline-card">
+                <h3><i class="fas fa-calendar"></i> dates clés</h3>
+                <div class="timeline-list" id="timelineList"></div>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-line"></i> évolution 6 mois</h3>
+                <div class="chart-container">
+                    <canvas id="eloChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <span><span class="legend-color" style="background:#4bc0c0;"></span> bullet</span>
+                    <span><span class="legend-color" style="background:#ffb347;"></span> blitz</span>
+                    <span><span class="legend-color" style="background:#ff8c8c;"></span> rapide</span>
+                    <span><span class="legend-color dashed" style="border-color: #4db90e;"></span> objectifs</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footnote-motivation" id="goalAchievedBanner"></div>
+
+        <div class="footer-info">
+            <div><i class="fa-regular fa-copyright"></i> AlphaRomo604 · v2.5.2 · 2026</div>
+            <div class="footer-links">
+                <a href="#" class="footer-link" id="chessLink" target="_blank">Chess.com</a>
+                <a href="#" class="footer-link" id="lichessLink" target="_blank">Lichess</a>
+                <a href="https://github.com/Alpha604/Objectif" class="footer-link" target="_blank">GitHub</a>
+                <div class="last-update" id="lastUpdateDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de gestion des comptes (loader) -->
+    <script src="loader.js"></script>
+    <!-- Chess.com API -->
+    <script src="chess-api.js"></script>
+    
+    <script>
+        // Variables pour l'état API
+        let apiStatus = {
+            online: false,
+            lastUpdate: null,
+            error: null,
+            loading: false
+        };
+
+        // Variables pour l'état Manuel
+        let manualStatus = {
+            lastUpdate: null,
+            dataFile: null,
+            staticData: true
+        };
+
+        // Mettre à jour l'affichage de l'état API (mode online)
+        function updateApiStatusDisplay(account) {
+            const apiStatusElement = document.getElementById('apiStatus');
+            const indicator = document.getElementById('apiStatusIndicator');
+            const statusText = document.getElementById('apiStatusText');
+            const lastUpdate = document.getElementById('apiLastUpdate');
+            const errorDetail = document.getElementById('apiErrorDetail');
+            const errorMessage = document.getElementById('apiErrorMessage');
+            
+            if (!account || account.source !== 'online') {
+                apiStatusElement.style.display = 'none';
+                return;
+            }
+            
+            apiStatusElement.style.display = 'inline-block';
+            
+            if (apiStatus.loading) {
+                indicator.className = 'api-status-indicator loading';
+                indicator.innerHTML = '<i class="fas fa-spinner"></i>';
+                statusText.innerHTML = '<span class="tooltip-value warning">Connexion...</span>';
+                lastUpdate.textContent = '-';
+                errorDetail.style.display = 'none';
+            } else if (apiStatus.online) {
+                indicator.className = 'api-status-indicator online';
+                indicator.innerHTML = '<i class="fas fa-cloud"></i>';
+                statusText.innerHTML = '<span class="tooltip-value success">En ligne</span>';
+                
+                // Formater la date
+                if (apiStatus.lastUpdate) {
+                    const date = new Date(apiStatus.lastUpdate);
+                    const formatted = `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    lastUpdate.textContent = `Aujourd'hui ${formatted}`;
+                } else {
+                    lastUpdate.textContent = '-';
+                }
+                
+                errorDetail.style.display = 'none';
+            } else {
+                indicator.className = 'api-status-indicator offline';
+                indicator.innerHTML = '<i class="fas fa-cloud-slash"></i>';
+                statusText.innerHTML = '<span class="tooltip-value error">Hors ligne</span>';
+                lastUpdate.textContent = '-';
+                
+                if (apiStatus.error) {
+                    errorMessage.textContent = apiStatus.error;
+                    errorDetail.style.display = 'flex';
+                } else {
+                    errorDetail.style.display = 'none';
+                }
+            }
+        }
+
+        // Mettre à jour l'affichage de l'état Manuel
+        function updateManualStatusDisplay(account) {
+            const manualStatusElement = document.getElementById('manualStatus');
+            const indicator = document.getElementById('manualStatusIndicator');
+            const lastUpdate = document.getElementById('manualLastUpdate');
+            
+            if (!account || account.source !== 'manual') {
+                manualStatusElement.style.display = 'none';
+                return;
+            }
+            
+            manualStatusElement.style.display = 'inline-block';
+            indicator.className = 'manual-status-indicator manual';
+            indicator.innerHTML = '<i class="fas fa-database"></i>';
+            
+            // Mettre à jour la dernière mise à jour si disponible
+            if (window.CHESS_DATA && window.CHESS_DATA.lastUpdate) {
+                const date = new Date(window.CHESS_DATA.lastUpdate);
+                const formatted = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+                lastUpdate.textContent = formatted;
+            } else {
+                lastUpdate.textContent = 'Non spécifiée';
+            }
+        }
+
+        // Fonction pour tester l'API (mode online)
+        async function testApiConnection(username) {
+            apiStatus.loading = true;
+            apiStatus.online = false;
+            apiStatus.error = null;
+            
+            const account = ACCOUNTS.find(a => a.chessUsername === username);
+            if (account) {
+                updateApiStatusDisplay(account);
+            }
+            
+            try {
+                // Utiliser le même code que chess-api.js
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.chess.com/pub/player/${username}/stats`)}`;
+                const response = await fetch(proxyUrl);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    apiStatus.online = true;
+                    apiStatus.lastUpdate = new Date().toISOString();
+                    apiStatus.loading = false;
+                    
+                    if (account) {
+                        updateApiStatusDisplay(account);
+                    }
+                    
+                    return { success: true, data };
+                } else {
+                    throw new Error(`Statut HTTP: ${response.status}`);
+                }
+            } catch (error) {
+                console.warn('API test échoué:', error);
+                
+                // Essayer un proxy de secours
+                try {
+                    const backupProxy = 'https://corsproxy.io/?';
+                    const response = await fetch(`${backupProxy}${encodeURIComponent(`https://api.chess.com/pub/player/${username}/stats`)}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        apiStatus.online = true;
+                        apiStatus.lastUpdate = new Date().toISOString();
+                        apiStatus.loading = false;
+                        apiStatus.error = null;
+                        
+                        if (account) {
+                            updateApiStatusDisplay(account);
+                        }
+                        
+                        return { success: true, data };
+                    } else {
+                        throw new Error(`Statut HTTP: ${response.status}`);
+                    }
+                } catch (backupError) {
+                    apiStatus.online = false;
+                    apiStatus.error = 'API Chess.com inaccessible';
+                    apiStatus.loading = false;
+                    
+                    if (account) {
+                        updateApiStatusDisplay(account);
+                    }
+                    
+                    return { success: false, error: 'API inaccessible' };
+                }
+            }
+        }
+
+        // Fonction pour charger un script
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Générer le dropdown
+        function generateDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentAccountId = urlParams.get('account') || 'alpha604';
+            
+            const visibleAccounts = ACCOUNTS.filter(account => account.status !== 'banned');
+            
+            dropdown.innerHTML = visibleAccounts.map(account => {
+                const avatar = AVATARS[account.avatarId] || AVATARS.default;
+                const isSelected = account.id === currentAccountId;
+                const palette = COLOR_PALETTES[account.palette] || COLOR_PALETTES['alpha604'];
+                const isClickable = account.status === 'active';
+                
+                // Icône source
+                const sourceIcon = account.source === 'online' 
+                    ? '<i class="fas fa-cloud" style="color: #4bc0c0; font-size: 10px; margin-left: 4px;" title="ELO live"></i>'
+                    : '<i class="fas fa-database" style="color: #a0b8c7; font-size: 10px; margin-left: 4px;" title="Données manuelles"></i>';
+                
+                const opacity = isClickable ? '1' : '0.7';
+                const cursor = isClickable ? 'pointer' : 'not-allowed';
+                
+                return `
+                    <div class="dropdown-item ${isSelected ? 'selected' : ''} ${!isClickable ? 'disabled' : ''}" 
+                         data-account="${account.id}" 
+                         data-status="${account.status}"
+                         data-source="${account.source}"
+                         style="${isSelected ? `border-left-color: ${palette.primary};` : ''} opacity: ${opacity}; cursor: ${cursor};">
+                        <div class="account-avatar">
+                            ${avatar.path 
+                                ? `<img src="${avatar.path}" alt="${account.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'avatar-fallback\\' style=\\'background:${avatar.bgColor};\\'>${avatar.fallback}</div>';">`
+                                : `<div class="avatar-fallback" style="background: ${avatar.bgColor};">${avatar.fallback}</div>`
+                            }
+                        </div>
+                        <div class="account-info">
+                            <span class="account-name">
+                                ${account.name}
+                                ${sourceIcon}
+                            </span>
+                            <span class="account-handle">${account.handle}</span>
+                        </div>
+                        ${!isClickable ? '<span class="status-badge">' + 
+                            (account.status === 'blocked' ? 'Bloqué' : 'En cours') + '</span>' : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const accountId = item.dataset.account;
+                    const status = item.dataset.status;
+                    
+                    if (status !== 'active') {
+                        const account = ACCOUNTS.find(a => a.id === accountId);
+                        if (account) {
+                            let message = status === 'blocked' 
+                                ? `🔒 ${account.name} est bloqué` 
+                                : `⏳ ${account.name} est en cours de configuration`;
+                            alert(message);
+                        }
+                        toggleDropdown();
+                        return;
+                    }
+                    
+                    if (accountId === currentAccountId) {
+                        toggleDropdown();
+                        return;
+                    }
+                    
+                    toggleDropdown();
+                    window.location.href = `?account=${accountId}`;
+                });
+            });
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            const button = document.getElementById('selectButton');
+            dropdown.classList.toggle('show');
+            button.classList.toggle('open');
+        }
+
+        // Mettre à jour l'UI
+        function updateAccountUI() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const accountId = urlParams.get('account') || 'alpha604';
+            
+            let account = ACCOUNTS.find(a => a.id === accountId);
+            
+            if (!account || account.status !== 'active') {
+                const defaultAccount = ACCOUNTS.find(a => a.status === 'active');
+                if (defaultAccount) {
+                    account = defaultAccount;
+                    history.replaceState({}, '', `?account=${defaultAccount.id}`);
+                } else {
+                    console.error('Aucun compte actif disponible');
+                    return;
+                }
+            }
+            
+            const avatar = AVATARS[account.avatarId] || AVATARS.default;
+            const palette = COLOR_PALETTES[account.palette] || COLOR_PALETTES['alpha604'];
+            
+            const selectedAvatar = document.getElementById('selectedAvatar');
+            selectedAvatar.innerHTML = avatar.path 
+                ? `<img src="${avatar.path}" alt="${account.name}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'avatar-fallback\\' style=\\'background:${avatar.bgColor};\\'>${avatar.fallback}</div>';">`
+                : `<div class="avatar-fallback" style="background: ${avatar.bgColor};">${avatar.fallback}</div>`;
+            
+            document.getElementById('selectedName').textContent = account.name;
+            document.getElementById('selectedHandle').textContent = account.handle;
+            document.getElementById('accountDisplayName').textContent = account.name;
+            document.getElementById('chessLink').href = account.chessUrl;
+            document.getElementById('lichessLink').href = account.lichessUrl;
+            
+            // Mettre à jour les affichages selon la source
+            if (account.source === 'online') {
+                updateApiStatusDisplay(account);
+                document.getElementById('manualStatus').style.display = 'none';
+                // Tester l'API
+                testApiConnection(account.chessUsername);
+            } else {
+                updateManualStatusDisplay(account);
+                document.getElementById('apiStatus').style.display = 'none';
+            }
+            
+            updateDropdownSelection(account.id);
+        }
+
+        function updateDropdownSelection(selectedId) {
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                const accountId = item.dataset.account;
+                if (accountId === selectedId) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        // Fermer le dropdown
+        document.addEventListener('click', (e) => {
+            const selector = document.querySelector('.account-selector');
+            const dropdown = document.getElementById('dropdownMenu');
+            const button = document.getElementById('selectButton');
+            
+            if (!selector.contains(e.target) && dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+                button.classList.remove('open');
+            }
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            generateDropdown();
+            updateAccountUI();
+            
+            document.getElementById('selectButton').addEventListener('click', toggleDropdown);
+        });
+    </script>
+</body>
+</html>
