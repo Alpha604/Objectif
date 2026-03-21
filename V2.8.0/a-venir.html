@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Dashboard · Comptes à venir</title>
+    
+    <!-- REDIRECTION MOBILE -->
+    <script>
+        if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.location.href = "tel.html";
+        }
+    </script>
+
+    <!-- Inter font + icônes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Configuration des photos de profil -->
+    <script src="pdp.js"></script>
+    
+    <style>
+        /* Styles identiques... */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            line-height: 1.5;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 30%, rgba(130, 196, 168, 0.03) 0%, transparent 30%),
+                radial-gradient(circle at 75% 70%, rgba(130, 196, 168, 0.03) 0%, transparent 30%),
+                repeating-linear-gradient(45deg, rgba(53, 79, 92, 0.1) 0px, rgba(53, 79, 92, 0.1) 2px, transparent 2px, transparent 8px);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(18, 28, 36, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .logo i {
+            color: #82c4a8;
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            color: #a0b8c7;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(130, 196, 168, 0.1);
+            color: #e6edf3;
+        }
+
+        .nav-link.active {
+            background: #82c4a8;
+            color: #0b1219;
+        }
+
+        .request-button {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.4rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 40px;
+            color: #0b1219;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+            text-decoration: none;
+        }
+
+        .request-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.5);
+            background: linear-gradient(135deg, #FFE55C, #FFB347);
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff, #82c4a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-header p {
+            color: #a0b8c7;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            background: rgba(30, 44, 52, 0.6);
+            border: 1px solid #354f5c;
+            color: #a0b8c7;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            border-color: #82c4a8;
+            color: #e6edf3;
+        }
+
+        .filter-btn.active {
+            background: #82c4a8;
+            border-color: #82c4a8;
+            color: #0b1219;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-header i {
+            color: #82c4a8;
+            font-size: 1.3rem;
+        }
+
+        .timeline-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .timeline-card {
+            background: rgba(22, 34, 43, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 28px;
+            padding: 2rem;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-card:hover {
+            transform: translateY(-5px);
+            border-color: #FFD700;
+            box-shadow: 0 15px 30px rgba(255, 215, 0, 0.15);
+        }
+
+        .timeline-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #82c4a8, #FFD700);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .timeline-card:hover::before {
+            opacity: 1;
+        }
+
+        .timeline-date {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 40px;
+            color: #FFD700;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .timeline-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 22px;
+            overflow: hidden;
+            background: #253b47;
+            border: 3px solid transparent;
+            transition: border-color 0.3s ease;
+            flex-shrink: 0;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .timeline-card:hover .timeline-avatar {
+            border-color: #FFD700;
+        }
+
+        .timeline-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 32px;
+            color: #ffffff;
+        }
+
+        .timeline-info h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.3rem;
+        }
+
+        .timeline-info p {
+            color: #a0b8c7;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .player-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            font-size: 0.8rem;
+            color: #a0b8c7;
+        }
+
+        .player-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .progress-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #a0b8c7;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #1f313c;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #82c4a8, #FFD700);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .timeline-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 1rem;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 40px;
+            color: #FFD700;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .eta-badge {
+            padding: 0.3rem 1rem;
+            background: rgba(130, 196, 168, 0.1);
+            border: 1px solid rgba(130, 196, 168, 0.3);
+            border-radius: 40px;
+            color: #82c4a8;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .features-coming {
+            background: rgba(22, 34, 43, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+        }
+
+        .features-coming h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .features-coming h2 i {
+            color: #FFD700;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(30, 44, 52, 0.4);
+            border-radius: 20px;
+            border: 1px solid #354f5c;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            border-color: #FFD700;
+            transform: translateY(-3px);
+        }
+
+        .feature-item i {
+            font-size: 2rem;
+            color: #82c4a8;
+            margin-bottom: 1rem;
+        }
+
+        .feature-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.3rem;
+        }
+
+        .feature-item p {
+            font-size: 0.8rem;
+            color: #a0b8c7;
+        }
+
+        .contact-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2.5rem;
+            background: rgba(30, 44, 52, 0.3);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .contact-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .contact-section p {
+            color: #a0b8c7;
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .contact-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .contact-btn.primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0b1219;
+        }
+
+        .contact-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .contact-btn.secondary {
+            background: rgba(30, 44, 52, 0.6);
+            border: 1px solid #354f5c;
+            color: #a0b8c7;
+        }
+
+        .contact-btn.secondary:hover {
+            border-color: #82c4a8;
+            color: #ffffff;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 0 0;
+            border-top: 1px solid rgba(53, 79, 92, 0.3);
+            font-size: 0.85rem;
+            color: #6d8f9f;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: #a0b8c7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #82c4a8;
+        }
+
+        @media (max-width: 1100px) {
+            .timeline-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .contact-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .timeline-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-section {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <div class="logo">
+                <i class="fas fa-chess-knight"></i>
+                <span>ChessDashboard</span>
+            </div>
+            <div class="nav-links">
+                <a href="accueil.html" class="nav-link">Accueil</a>
+                <a href="classement.html" class="nav-link">Leaderboard</a>
+                <a href="#" class="nav-link active">À venir</a>
+                <a href="version.html" class="nav-link">Mises à jour</a>
+                <a href="apropos.html" class="nav-link">À propos</a>
+            </div>
+            <a href="accueil.html" class="request-button">
+                <i class="fas fa-plus-circle"></i>
+                <span>Demander son compte</span>
+            </a>
+        </nav>
+
+        <!-- En-tête -->
+        <div class="page-header">
+            <h1>Comptes à venir</h1>
+            <p>Découvrez les prochains joueurs qui rejoindront ChessDashboard</p>
+        </div>
+
+        <!-- Filtres -->
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterAccounts('all')">Tous</button>
+            <button class="filter-btn" onclick="filterAccounts('soon')">Bientôt</button>
+            <button class="filter-btn" onclick="filterAccounts('planned')">Planifiés</button>
+        </div>
+
+        <!-- Timeline des comptes -->
+        <div class="timeline-container">
+            <div class="timeline-header">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>Calendrier des arrivées</h2>
+            </div>
+
+            <div class="timeline-grid" id="timelineGrid">
+                <!-- Rempli par JS -->
+            </div>
+        </div>
+
+        <!-- Fonctionnalités à venir -->
+        <div class="features-coming">
+            <h2><i class="fas fa-rocket"></i> Fonctionnalités à venir</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i class="fas fa-chart-bar"></i>
+                    <h4>Statistiques avancées</h4>
+                    <p>Graphiques détaillés et analyses de parties</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-trophy"></i>
+                    <h4>Tournois</h4>
+                    <p>Suivi des performances en tournoi</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-robot"></i>
+                    <h4>Analyse IA</h4>
+                    <p>Conseils personnalisés par l'IA</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-users"></i>
+                    <h4>Clubs</h4>
+                    <p>Statistiques par équipe et club</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section contact -->
+        <div class="contact-section">
+            <h3>Vous voulez apparaître ici ?</h3>
+            <p>Contactez-moi sur Chess.com pour ajouter votre compte au dashboard</p>
+            <div class="contact-buttons">
+                <a href="https://www.chess.com/member/alpharomo604" class="contact-btn primary" target="_blank">
+                    <i class="fas fa-chess-queen"></i>
+                    Me contacter sur Chess.com
+                </a>
+                <a href="accueil.html" class="contact-btn secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Retour à l'accueil
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div><i class="fa-regular fa-copyright"></i> AlphaRomo604 · 2026</div>
+            <div class="footer-links">
+                <a href="#">Confidentialité</a>
+                <a href="#">Conditions</a>
+                <a href="https://www.chess.com/member/alpharomo604" target="_blank">Contact</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ==============================================
+        // CONFIGURATION DES COMPTES À VENIR
+        // Modifie directement ces valeurs
+        // ==============================================
+        
+        const UPCOMING_CONFIG = [
+            {
+                id: 'Alpha',
+                name: 'AlphaRomo604',
+                handle: '@AlphaRomo604',
+                avatarId: 'alpha604',
+                // Stats ELO
+                bulletElo: 1104,
+                blitzElo: 1104,
+                rapideElo: 1104,
+                // Infos de sortie
+                releaseDate: '2026-03-1',
+                progress: 100,
+                status: 'Prêt',
+                eta: 'J-0',
+                // Autres infos
+                title: 'Non titré',
+                country: 'France',
+                color: '#c482a8',
+                hidden: false  // = true pour rendre invisible
+            },
+            {
+                id: 'karen',
+                name: 'Karen Karapetyan',
+                handle: '@karen_chess',
+                avatarId: 'karen',
+                // Stats ELO
+                bulletElo: 1450,
+                blitzElo: 1380,
+                rapideElo: 1420,
+                // Infos de sortie
+                releaseDate: '2026-04-15',
+                progress: 60,
+                status: 'Bientôt',
+                eta: 'J-45',
+                // Autres infos
+                title: 'Maître FIDE',
+                country: 'Arménie',
+                color: '#c482a8',
+                hidden: true  // = true pour rendre invisible
+            },
+            {
+                id: 'martin',
+                name: 'LgMartinIsCool',
+                handle: '@lgmartiniscool',
+                avatarId: 'martin',
+                // Stats ELO
+                bulletElo: 1180,
+                blitzElo: 1120,
+                rapideElo: 1150,
+                // Infos de sortie
+                releaseDate: '2026-05-01',
+                progress: 40,
+                status: 'En préparation',
+                eta: 'J-60',
+                // Autres infos
+                title: 'Expert',
+                country: 'France',
+                color: '#ffb347',
+                hidden: true  // = true pour rendre invisible
+            }
+        ];
+
+        // Comptes spéciaux (autres GM) avec option hidden
+        const SPECIAL_ACCOUNTS = [
+
+        ];
+
+        // ==============================================
+        // FIN DE LA CONFIGURATION
+        // NE RIEN MODIFIER EN DESSOUS
+        // ==============================================
+
+        let upcomingAccounts = [];
+
+        // Fonction pour calculer l'ELO moyen
+        function calculateAvgElo(bullet, blitz, rapide) {
+            return Math.round((bullet + blitz + rapide) / 3);
+        }
+
+        // Charger la configuration
+        function loadUpcomingAccounts() {
+            // Ajouter les comptes configurés (sauf ceux cachés)
+            UPCOMING_CONFIG.forEach(account => {
+                if (account.hidden) return; // Ignorer les comptes cachés
+                
+                const avgElo = calculateAvgElo(account.bulletElo, account.blitzElo, account.rapideElo);
+                const avatar = AVATARS[account.avatarId] || AVATARS.default;
+                
+                upcomingAccounts.push({
+                    id: account.id,
+                    name: account.name,
+                    handle: account.handle,
+                    avatarPath: avatar.path,
+                    fallback: avatar.fallback,
+                    bgColor: avatar.bgColor,
+                    date: account.releaseDate,
+                    progress: account.progress,
+                    status: account.status,
+                    eta: account.eta,
+                    title: account.title,
+                    country: account.country,
+                    elo: avgElo,
+                    color: account.color
+                });
+            });
+
+            // Ajouter les comptes spéciaux (sauf ceux cachés)
+            SPECIAL_ACCOUNTS.forEach(account => {
+                if (account.hidden) return; // Ignorer les comptes cachés
+                
+                upcomingAccounts.push({
+                    id: account.id,
+                    name: account.name,
+                    handle: account.handle,
+                    avatarPath: account.avatarPath,
+                    fallback: account.fallback,
+                    bgColor: account.bgColor,
+                    date: account.releaseDate,
+                    progress: account.progress,
+                    status: account.status,
+                    eta: account.eta,
+                    title: account.title,
+                    country: account.country,
+                    elo: account.elo,
+                    color: account.color
+                });
+            });
+
+            // Trier par date
+            upcomingAccounts.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Générer la timeline
+            generateTimeline(upcomingAccounts);
+        }
+
+        // Fonction pour générer la timeline
+        function generateTimeline(accounts) {
+            const grid = document.getElementById('timelineGrid');
+            grid.innerHTML = accounts.map(account => {
+                const formattedDate = formatFrenchDate(account.date);
+                const eta = account.eta === 'TBD' ? 'Date à définir' : account.eta;
+                
+                return `
+                    <div class="timeline-card" data-id="${account.id}" data-progress="${account.progress}">
+                        <span class="timeline-date">
+                            <i class="far fa-calendar-alt" style="margin-right: 4px;"></i>
+                            ${formattedDate}
+                        </span>
+                        <div class="timeline-content">
+                            <div class="timeline-avatar">
+                                ${getAvatarHtml(account)}
+                            </div>
+                            <div class="timeline-info">
+                                <h3 style="color: ${account.color};">${account.name}</h3>
+                                <p>${account.handle}</p>
+                                <div class="player-meta">
+                                    <span><i class="fas fa-trophy" style="color: #FFD700;"></i> ${account.title}</span>
+                                    <span><i class="fas fa-flag" style="color: #82c4a8;"></i> ${account.country}</span>
+                                    <span><i class="fas fa-chart-line" style="color: #4bc0c0;"></i> ${account.elo}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-header">
+                                <span>Intégration</span>
+                                <span>${account.progress}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${account.progress}%; background: linear-gradient(90deg, ${account.color}, #FFD700);"></div>
+                            </div>
+                        </div>
+                        <div class="timeline-footer">
+                            <span class="status-badge">
+                                <i class="fas ${account.progress >= 50 ? 'fa-rocket' : account.progress >= 25 ? 'fa-hourglass-half' : 'fa-clock'}"></i>
+                                ${account.status}
+                            </span>
+                            <span class="eta-badge">
+                                <i class="far fa-clock"></i>
+                                ${eta}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Fonction pour obtenir l'avatar
+        function getAvatarHtml(account) {
+            if (account.avatarPath) {
+                return `<img src="${account.avatarPath}" alt="${account.name}" 
+                         onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'avatar-fallback\\' style=\\'background:${account.bgColor};\\'>${account.fallback}</div>';">`;
+            }
+            return `<div class="avatar-fallback" style="background: ${account.bgColor};">${account.fallback}</div>`;
+        }
+
+        // Fonction pour formater la date
+        function formatFrenchDate(dateString) {
+            const months = ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
+            const [year, month, day] = dateString.split('-');
+            return `${parseInt(day)} ${months[parseInt(month)-1]} ${year}`;
+        }
+
+        // Fonction pour filtrer les comptes
+        function filterAccounts(filter) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            let filteredAccounts = upcomingAccounts;
+            if (filter === 'soon') {
+                filteredAccounts = upcomingAccounts.filter(a => a.progress >= 50);
+            } else if (filter === 'planned') {
+                filteredAccounts = upcomingAccounts.filter(a => a.progress < 50);
+            }
+            
+            generateTimeline(filteredAccounts);
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUpcomingAccounts();
+        });
+
+        window.filterAccounts = filterAccounts;
+    </script>
+</body>
+</html>
