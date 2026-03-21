@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>FIDE World Ranking | Official Chess Ratings</title>
+    <!-- Google Fonts + Font Awesome 6.4 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        /* Subtle diagonal grid pattern */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, rgba(130, 196, 168, 0.02) 1px, transparent 1px),
+                linear-gradient(-45deg, rgba(130, 196, 168, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px 32px 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ========== NAVBAR ========== */
+        .navbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(18, 28, 40, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 10px 24px;
+            border-radius: 60px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            background: #82c4a8;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            color: #0b1219;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: -0.3px;
+        }
+
+        .badge-officiel {
+            background: rgba(255, 215, 0, 0.15);
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px;
+            border-radius: 50px;
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #a0b3d9;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: #82c4a8;
+            color: #0b1219;
+            box-shadow: 0 2px 8px rgba(130,196,168,0.3);
+        }
+
+        /* Hero grid */
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 32px;
+            margin-bottom: 48px;
+        }
+
+        /* stats boxes */
+        .stats-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .stat-box {
+            background: rgba(22, 32, 45, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 28px;
+            padding: 20px 16px;
+            text-align: center;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            transition: all 0.2s;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #82c4a8;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #FFD700;
+        }
+
+        .stat-sub {
+            font-size: 0.75rem;
+            color: #9aaec5;
+        }
+
+        /* ranking panel (right side) */
+        .ranking-panel {
+            background: rgba(12, 20, 28, 0.65);
+            backdrop-filter: blur(4px);
+            border-radius: 28px;
+            border: 1px solid rgba(130, 196, 168, 0.25);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .panel-header {
+            padding: 18px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn, .refresh-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: #e6edf3;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #FFD700;
+            color: #0b1219;
+        }
+
+        .refresh-btn {
+            background: #82c4a8;
+            color: #0b1219;
+            font-weight: bold;
+        }
+
+        .refresh-btn i {
+            margin-right: 6px;
+        }
+
+        /* player table header (7 columns) */
+        .players-header {
+            display: grid;
+            grid-template-columns: 56px 72px 1fr 105px 100px 100px 75px;
+            padding: 12px 20px;
+            background: rgba(0,0,0,0.3);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #82c4a8;
+            border-bottom: 1px solid rgba(130,196,168,0.2);
+        }
+
+        .players-list {
+            max-height: 540px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        /* player card row */
+        .player-row {
+            display: grid;
+            grid-template-columns: 56px 72px 1fr 105px 100px 100px 75px;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s ease;
+            cursor: default;
+            background: transparent;
+        }
+
+        .player-row:hover {
+            transform: translateX(4px);
+            border-left: 3px solid #FFD700;
+            background: rgba(255,215,0,0.05);
+            border-radius: 12px;
+        }
+
+        .rank-cell {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .top1-rank { color: #FFD700; text-shadow: 0 0 4px rgba(255,215,0,0.4); }
+        .top2-rank { color: #C0C0C0; }
+        .top3-rank { color: #CD7F32; }
+
+        .avatar-cell {
+            display: flex;
+            justify-content: center;
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #1e2a3a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: #82c4a8;
+            border: 1px solid rgba(130,196,168,0.5);
+        }
+
+        .info-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .player-name {
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .title-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 20px;
+            background: #2c3e2f;
+        }
+        .title-gm { background: #FFD700; color: #1e1a0c; }
+        .title-im { background: #82c4a8; color: #0b1219; }
+        .title-wgm, .title-wim { background: #ff99cc; color: #2d0e1f; }
+        .player-fed {
+            font-size: 0.7rem;
+            color: #b9d0f0;
+        }
+        .main-elo {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #FFD700;
+        }
+        .secondary-elo {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #b0c4de;
+        }
+        .age-cell {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .load-more-btn {
+            background: transparent;
+            border: 1px solid #82c4a8;
+            color: #82c4a8;
+            width: 90%;
+            margin: 20px auto;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: block;
+        }
+
+        /* loader overlay */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11,18,25,0.92);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            gap: 20px;
+            transition: opacity 0.3s;
+        }
+        .chess-king {
+            font-size: 4rem;
+            animation: swing 1.2s infinite ease-in-out;
+            color: #FFD700;
+        }
+        @keyframes swing {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(12deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .error-message {
+            background: rgba(255,80,80,0.2);
+            border-left: 4px solid #ff5252;
+            padding: 16px;
+            margin: 16px;
+            border-radius: 16px;
+            color: #ffbaba;
+        }
+
+        .features-footer {
+            margin-top: 56px;
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .feature-card {
+            background: rgba(22, 32, 45, 0.6);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid rgba(130,196,168,0.2);
+        }
+        .footer-links {
+            text-align: center;
+            padding: 24px 0 16px;
+            border-top: 1px solid rgba(130,196,168,0.2);
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+        }
+        .footer-links a {
+            color: #82c4a8;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        @media (max-width: 1100px) {
+            .hero-grid { grid-template-columns: 1fr; }
+            .players-header, .player-row { grid-template-columns: 50px 64px 1fr 95px 85px 85px 65px; font-size: 0.75rem; }
+        }
+        @media (max-width: 860px) {
+            .container { padding: 16px; }
+            .players-header, .player-row { grid-template-columns: 40px 56px 1fr 85px 70px 70px 55px; }
+            .main-elo { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader" class="loader-overlay">
+    <div class="chess-king">♛</div>
+    <div style="font-weight: 500;">Chargement classement FIDE officiel...</div>
+</div>
+
+<div class="container">
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo-area">
+            <div class="logo-icon">♜</div>
+            <div class="logo-text">FIDE World Ranking</div>
+            <div class="badge-officiel">Officiel FIDE</div>
+        </div>
+        <div class="mode-tabs">
+            <button class="mode-btn active" data-mode="standard">Standard</button>
+            <button class="mode-btn" data-mode="rapid">Rapide</button>
+            <button class="mode-btn" data-mode="blitz">Blitz</button>
+        </div>
+    </div>
+
+    <div class="hero-grid">
+        <!-- Left stats -->
+        <div class="stats-panel">
+            <div class="stats-grid">
+                <div class="stat-box"><div class="stat-label">N°1 Mondial</div><div class="stat-value" id="statWorldNo1">—</div><div class="stat-sub" id="statNo1Elo"></div></div>
+                <div class="stat-box"><div class="stat-label">ELO Moyen Top 10</div><div class="stat-value" id="statAvgTop10">—</div><div class="stat-sub">Classement actuel</div></div>
+                <div class="stat-box"><div class="stat-label">Période</div><div class="stat-value" id="statPeriod">2025</div><div class="stat-sub">Mise à jour live</div></div>
+            </div>
+            <div class="feature-card" style="background: rgba(0,0,0,0.3);">
+                <i class="fas fa-chart-line" style="color:#82c4a8; font-size: 1.8rem;"></i>
+                <p style="margin-top: 8px; font-size:0.85rem;">Données officielles FIDE via Lichess API • Évolution temps réel</p>
+            </div>
+        </div>
+
+        <!-- Right ranking panel -->
+        <div class="ranking-panel">
+            <div class="panel-header">
+                <div class="filter-group">
+                    <button class="filter-btn active" data-filter="all">Tous</button>
+                    <button class="filter-btn" data-filter="top10">Top 10</button>
+                    <button class="filter-btn" data-filter="top25">Top 25</button>
+                    <button class="filter-btn" data-filter="top50">Top 50</button>
+                    <button class="filter-btn" data-filter="women">Femmes ♀</button>
+                </div>
+                <button class="refresh-btn" id="refreshBtn"><i class="fas fa-sync-alt"></i> Actualiser</button>
+            </div>
+            <div class="players-header">
+                <span>#</span><span>Avatar</span><span>Joueur</span><span>ELO Principal</span><span>Rapide</span><span>Blitz</span><span>Âge</span>
+            </div>
+            <div class="players-list" id="playersListContainer">
+                <div style="padding: 40px; text-align:center;">Chargement des meilleurs joueurs...</div>
+            </div>
+            <button class="load-more-btn" id="loadMoreBtn">Voir plus (+25)</button>
+        </div>
+    </div>
+
+    <!-- Features section -->
+    <div class="features-footer">
+        <div class="feature-card"><i class="fas fa-chess-queen" style="font-size: 2rem; color:#FFD700;"></i><h3 style="margin:12px 0">Classement mondial</h3><p>Classement officiel FIDE des meilleurs joueurs d'échecs.</p></div>
+        <div class="feature-card"><i class="fas fa-chart-simple" style="font-size: 2rem; color:#82c4a8;"></i><h3 style="margin:12px 0">ELO Rapide & Blitz</h3><p>Comparaison des performances dans les 3 formats.</p></div>
+        <div class="feature-card"><i class="fas fa-globe" style="font-size: 2rem; color:#FFD700;"></i><h3 style="margin:12px 0">Données Officielles</h3><p>Intégration directe avec l'API FIDE/Lichess.</p></div>
+    </div>
+    <div class="footer-links">
+        <a href="https://ratings.fide.com/" target="_blank"><i class="fas fa-external-link-alt"></i> ratings.fide.com</a>
+        <a href="https://lichess.org/fide" target="_blank"><i class="fab fa-lichess"></i> lichess.org/fide</a>
+        <a href="#"><i class="fas fa-info-circle"></i> À propos</a>
+    </div>
+</div>
+
+<script>
+    // ---------- Global state ----------
+    let currentMode = 'standard';   // 'standard', 'rapid', 'blitz'
+    let currentFilter = 'all';      // 'all', 'top10', 'top25', 'top50', 'women'
+    let allPlayers = [];             // complete dataset after loading (raw)
+    let displayedCount = 25;         // pagination slice
+    let isLoading = false;
+    let loadError = null;
+
+    // Helper: get Elo by mode
+    function getEloByMode(player, mode) {
+        if (mode === 'standard') return player.standard;
+        if (mode === 'rapid') return player.rapid;
+        return player.blitz;
+    }
+
+    // Sort players by current mode descending
+    function sortPlayersByMode(players, mode) {
+        return [...players].sort((a,b) => (getEloByMode(b, mode) || 0) - (getEloByMode(a, mode) || 0));
+    }
+
+    // filter players by gender/women + top N if needed
+    function applyFilter(players, filter, mode) {
+        let filtered = [...players];
+        if (filter === 'women') {
+            filtered = filtered.filter(p => p.gender === 'f');
+        } else if (filter === 'top10') {
+            filtered = filtered.slice(0,10);
+        } else if (filter === 'top25') {
+            filtered = filtered.slice(0,25);
+        } else if (filter === 'top50') {
+            filtered = filtered.slice(0,50);
+        }
+        return filtered;
+    }
+
+    // Update stats (world #1, avg top10)
+    function updateStats(players, mode) {
+        if (!players.length) return;
+        const sorted = sortPlayersByMode(players, mode);
+        const worldNo1 = sorted[0];
+        const statDiv = document.getElementById('statWorldNo1');
+        const statNo1EloSpan = document.getElementById('statNo1Elo');
+        if (worldNo1) {
+            const name = worldNo1.name.split(',')[0] || worldNo1.name;
+            statDiv.innerText = name.length > 15 ? name.substring(0,12)+'..' : name;
+            const eloVal = getEloByMode(worldNo1, mode) || '—';
+            statNo1EloSpan.innerText = `${eloVal} ELO`;
+        } else { statDiv.innerText = '—'; statNo1EloSpan.innerText = ''; }
+        const top10Players = sorted.slice(0,10);
+        let sum = 0, count = 0;
+        for(let p of top10Players) {
+            let elo = getEloByMode(p, mode);
+            if(elo && typeof elo === 'number') { sum+=elo; count++; }
+        }
+        const avg = count ? Math.round(sum/count) : 0;
+        document.getElementById('statAvgTop10').innerText = avg || '—';
+        document.getElementById('statPeriod').innerHTML = `2024-25 <i class="fas fa-calendar-alt"></i>`;
+    }
+
+    // compute age from year
+    function getAgeFromYear(year) {
+        if(!year) return '?';
+        const currentYear = new Date().getFullYear();
+        let age = currentYear - year;
+        return age > 0 && age < 100 ? age : '?';
+    }
+
+    // Build player row HTML
+    function renderPlayerRow(player, idx, mode, rank) {
+        const mainElo = getEloByMode(player, mode) || '—';
+        const rapidElo = player.rapid || '—';
+        const blitzElo = player.blitz || '—';
+        const age = getAgeFromYear(player.year);
+        const title = player.title || '';
+        let titleClass = '';
+        if (title === 'GM') titleClass = 'title-gm';
+        else if (title === 'IM') titleClass = 'title-im';
+        else if (title === 'WGM' || title === 'WIM') titleClass = 'title-wgm';
+        const rankClass = (rank === 1) ? 'top1-rank' : (rank === 2) ? 'top2-rank' : (rank === 3) ? 'top3-rank' : '';
+        const flag = player.federation ? `<i class="fas fa-flag"></i> ${player.federation}` : '';
+        const displayName = player.name.length > 24 ? player.name.substring(0,22)+'..' : player.name;
+        const profilePicUrl = `https://ratings.fide.com/photo_path.phtml?picture=${player.id}`;
+        const initials = player.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        return `
+            <div class="player-row">
+                <div class="rank-cell ${rankClass}">${rank}</div>
+                <div class="avatar-cell">
+                    <img class="avatar" src="${profilePicUrl}" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%3E%3Crect%20width%3D%2260%22%20height%3D%2260%22%20fill%3D%22%23222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%2382c4a8%22%20font-size%3D%2224%22%3E${initials}%3C%2Ftext%3E%3C%2Fsvg%3E';" alt="photo">
+                </div>
+                <div class="info-cell">
+                    <div class="player-name">${displayName} ${title ? `<span class="title-badge ${titleClass}">${title}</span>` : ''}</div>
+                    <div class="player-fed">${flag}</div>
+                </div>
+                <div class="main-elo">${mainElo}</div>
+                <div class="secondary-elo">${rapidElo}</div>
+                <div class="secondary-elo">${blitzElo}</div>
+                <div class="age-cell">${age} ans</div>
+            </div>
+        `;
+    }
+
+    // Render current view (based on mode/filter/pagination)
+    function renderCurrentView() {
+        const container = document.getElementById('playersListContainer');
+        if (!allPlayers.length && !isLoading) {
+            container.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Aucune donnée. Vérifiez votre connexion ou actualisez.</div>';
+            return;
+        }
+        if (isLoading) {
+            container.innerHTML = '<div style="padding: 40px; text-align:center;"><i class="fas fa-spinner fa-pulse"></i> Chargement des classements...</div>';
+            return;
+        }
+        let sorted = sortPlayersByMode(allPlayers, currentMode);
+        let filtered = applyFilter(sorted, currentFilter, currentMode);
+        const visible = filtered.slice(0, displayedCount);
+        if (!visible.length) {
+            container.innerHTML = '<div style="padding: 40px; text-align:center;">Aucun joueur correspondant aux filtres.</div>';
+            return;
+        }
+        let html = '';
+        visible.forEach((player, i) => {
+            const rank = sorted.findIndex(p => p.id === player.id) + 1;
+            html += renderPlayerRow(player, i, currentMode, rank);
+        });
+        container.innerHTML = html;
+        updateStats(allPlayers, currentMode);
+        const loadBtn = document.getElementById('loadMoreBtn');
+        if (filtered.length <= displayedCount) loadBtn.style.display = 'none';
+        else loadBtn.style.display = 'block';
+    }
+
+    // fetch from Lichess FIDE leaderboard API (correct endpoint)
+    async function fetchAllPlayers(mode = currentMode) {
+        isLoading = true;
+        loadError = null;
+        document.getElementById('loader').style.display = 'flex';
+        renderCurrentView();
+        const allResults = [];
+        
+        try {
+            // Using the correct Lichess FIDE leaderboard endpoint
+            // This API returns the top FIDE-rated players
+            const url = `https://lichess.org/api/player/top/${mode}/200`;
+            
+            console.log(`Fetching from: ${url}`);
+            const resp = await fetch(url);
+            
+            if(!resp.ok) {
+                throw new Error(`HTTP ${resp.status} - ${resp.statusText}`);
+            }
+            
+            const data = await resp.json();
+            
+            // The API returns { users: [...] } for top players
+            let players = [];
+            if (data && data.users) {
+                players = data.users;
+            } else if (Array.isArray(data)) {
+                players = data;
+            } else {
+                throw new Error("Format de réponse inattendu");
+            }
+            
+            // Transform Lichess player data to match our expected format
+            for (const player of players) {
+                // Extract FIDE ID if available
+                let fideId = null;
+                if (player.profile && player.profile.fideId) {
+                    fideId = player.profile.fideId;
+                } else if (player.fideId) {
+                    fideId = player.fideId;
+                } else {
+                    fideId = player.id; // Use Lichess ID as fallback
+                }
+                
+                // Determine gender from profile or name (simplified)
+                let gender = 'm';
+                if (player.profile && player.profile.female === true) {
+                    gender = 'f';
+                } else if (player.title && (player.title.includes('WGM') || player.title.includes('WIM') || player.title.includes('WFM'))) {
+                    gender = 'f';
+                }
+                
+                // Get ELO ratings (perfs for different time controls)
+                const perfStandard = player.perfs?.standard?.rating || null;
+                const perfRapid = player.perfs?.rapid?.rating || null;
+                const perfBlitz = player.perfs?.blitz?.rating || null;
+                
+                // Only include players with at least one rating
+                if (!perfStandard && !perfRapid && !perfBlitz) continue;
+                
+                allResults.push({
+                    id: fideId || player.id,
+                    name: player.username || player.name || `Player_${player.id}`,
+                    title: player.title || '',
+                    federation: player.profile?.country || player.country || 'N/A',
+                    year: player.profile?.realName ? null : null, // Year not available in this API
+                    gender: gender,
+                    standard: perfStandard,
+                    rapid: perfRapid,
+                    blitz: perfBlitz
+                });
+            }
+            
+            // Deduplicate by id
+            const unique = new Map();
+            for(let p of allResults) if(p.id) unique.set(p.id, p);
+            allPlayers = Array.from(unique.values());
+            
+            // Sort initially
+            allPlayers = sortPlayersByMode(allPlayers, mode);
+            loadError = null;
+            
+            if (allPlayers.length === 0) {
+                throw new Error("Aucun joueur trouvé dans la réponse");
+            }
+            
+        } catch(err) {
+            console.error("API Error:", err);
+            loadError = err.message;
+            allPlayers = [];
+        } finally {
+            isLoading = false;
+            document.getElementById('loader').style.display = 'none';
+            displayedCount = 25;
+            renderCurrentView();
+            if(loadError) {
+                const container = document.getElementById('playersListContainer');
+                container.innerHTML = `<div class="error-message"><i class="fas fa-wifi"></i> Erreur API : ${loadError}.<br><br>
+                <strong>Note:</strong> L'API Lichess nécessite parfois un proxy CORS. Essayez d'utiliser une extension CORS ou consultez la console.<br>
+                <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px; background:#82c4a8; border:none; border-radius:8px; cursor:pointer;">Réessayer</button></div>`;
+            }
+        }
+    }
+
+    // refresh data based on mode (reload from API)
+    async function refreshData() {
+        displayedCount = 25;
+        await fetchAllPlayers(currentMode);
+    }
+
+    // switch mode without reload (re-sort & filter from already loaded data)
+    function switchMode(mode) {
+        currentMode = mode;
+        if(allPlayers.length) {
+            // re-sort
+            renderCurrentView();
+            updateStats(allPlayers, currentMode);
+        } else {
+            refreshData();
+        }
+    }
+
+    // Event binding
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const newMode = btn.getAttribute('data-mode');
+            switchMode(newMode);
+        });
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.getAttribute('data-filter');
+            displayedCount = 25;
+            renderCurrentView();
+        });
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        const spinner = document.querySelector('#refreshBtn i');
+        spinner.classList.add('fa-spin');
+        refreshData().finally(() => spinner.classList.remove('fa-spin'));
+    });
+
+    document.getElementById('loadMoreBtn').addEventListener('click', () => {
+        let sorted = sortPlayersByMode(allPlayers, currentMode);
+        let filtered = applyFilter(sorted, currentFilter, currentMode);
+        if(displayedCount + 25 <= filtered.length) displayedCount += 25;
+        else displayedCount = filtered.length;
+        renderCurrentView();
+    });
+
+    // initial load
+    (async () => {
+        await fetchAllPlayers('standard');
+    })();
+</script>
+</body>
+</html>

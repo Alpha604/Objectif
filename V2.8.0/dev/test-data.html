@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Données · Dev</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b1219;
+            font-family: 'Inter', sans-serif;
+            color: #e6edf3;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff, #82c4a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #a0b8c7;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        select, button {
+            padding: 0.8rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid #354f5c;
+            background: #1e2c34;
+            color: #e6edf3;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select {
+            min-width: 250px;
+            background: rgba(30, 44, 52, 0.8);
+        }
+
+        select:hover, button:hover {
+            border-color: #82c4a8;
+        }
+
+        button {
+            background: #82c4a8;
+            color: #0b1219;
+            font-weight: 600;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button.secondary {
+            background: transparent;
+            border: 1px solid #354f5c;
+            color: #a0b8c7;
+        }
+
+        button.secondary:hover {
+            border-color: #82c4a8;
+            color: #e6edf3;
+        }
+
+        .data-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: rgba(22, 34, 43, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+        }
+
+        .card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #82c4a8;
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(53, 79, 92, 0.3);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: rgba(30, 44, 52, 0.4);
+            border-radius: 16px;
+            padding: 1rem;
+        }
+
+        .info-label {
+            color: #a0b8c7;
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .info-value small {
+            font-size: 0.8rem;
+            color: #a0b8c7;
+            font-weight: normal;
+        }
+
+        .progress {
+            margin-top: 0.5rem;
+            height: 6px;
+            background: #1f313c;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #82c4a8;
+            border-radius: 3px;
+        }
+
+        .raw-data {
+            background: rgba(22, 34, 43, 0.7);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 1px solid rgba(130, 196, 168, 0.2);
+            margin-bottom: 2rem;
+        }
+
+        .raw-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .raw-header h3 {
+            color: #82c4a8;
+            font-size: 1.1rem;
+        }
+
+        pre {
+            background: #1a2a33;
+            padding: 1.5rem;
+            border-radius: 16px;
+            overflow: auto;
+            max-height: 400px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            color: #e6edf3;
+            border: 1px solid #253b47;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(130, 196, 168, 0.2);
+            color: #82c4a8;
+            border: 1px solid rgba(130, 196, 168, 0.3);
+        }
+
+        .status-blocked {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .status-loading {
+            background: rgba(255, 180, 71, 0.2);
+            color: #ffb347;
+            border: 1px solid rgba(255, 180, 71, 0.3);
+        }
+
+        .footer {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(53, 79, 92, 0.3);
+            color: #6d8f9f;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: #a0b8c7;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #82c4a8;
+        }
+
+        @media (max-width: 768px) {
+            .data-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            select, button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-database"></i> Test Données</h1>
+        <div class="subtitle">Visualisation des données des comptes et des fichiers data/</div>
+
+        <div class="controls">
+            <select id="accountSelect">
+                <option value="">Charger un compte...</option>
+            </select>
+            <button onclick="loadSelectedAccount()">
+                <i class="fas fa-cloud-download-alt"></i> Charger
+            </button>
+            <button class="secondary" onclick="loadAllAccounts()">
+                <i class="fas fa-layer-group"></i> Tout charger
+            </button>
+            <button class="secondary" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-left"></i> Retour
+            </button>
+        </div>
+
+        <!-- Panel d'informations -->
+        <div class="data-panel" id="infoPanel" style="display: none;">
+            <div class="card">
+                <h3><i class="fas fa-user"></i> Informations compte</h3>
+                <div id="accountInfo"></div>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-line"></i> Statistiques ELO</h3>
+                <div id="eloInfo"></div>
+            </div>
+        </div>
+
+        <!-- Données brutes -->
+        <div class="raw-data" id="rawData" style="display: none;">
+            <div class="raw-header">
+                <h3><i class="fas fa-code"></i> Données brutes (CHESS_DATA)</h3>
+                <div>
+                    <span class="status-badge" id="dataSource"></span>
+                    <span class="status-badge" id="dataDate"></span>
+                </div>
+            </div>
+            <pre id="rawJson">Sélectionne un compte pour voir les données</pre>
+        </div>
+
+        <!-- Liste des comptes chargés -->
+        <div class="raw-data" id="loadedAccounts">
+            <div class="raw-header">
+                <h3><i class="fas fa-list"></i> Comptes disponibles</h3>
+                <span id="accountsCount">0 comptes</span>
+            </div>
+            <div id="accountsList"></div>
+        </div>
+
+        <div class="footer">
+            <div><i class="fa-regular fa-copyright"></i> Espace Dev · Test Données</div>
+            <div class="footer-links">
+                <a href="#" onclick="clearData()">Nettoyer</a>
+                <a href="#" onclick="location.reload()">Rafraîchir</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../pdp.js"></script>
+    <script>
+        // Stockage des données chargées
+        let loadedAccountsData = [];
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAccountsList();
+            updateAccountsCount();
+        });
+
+        // Charger la liste des comptes
+        function loadAccountsList() {
+            const select = document.getElementById('accountSelect');
+            const accountsList = document.getElementById('accountsList');
+            
+            if (typeof ACCOUNTS === 'undefined') {
+                select.innerHTML = '<option value="">Erreur: ACCOUNTS non défini</option>';
+                accountsList.innerHTML = '<p style="color:#ff6b6b;">❌ pdp.js non chargé ou ACCOUNTS manquant</p>';
+                return;
+            }
+
+            // Remplir le select
+            select.innerHTML = '<option value="">Choisir un compte...</option>';
+            ACCOUNTS.forEach(account => {
+                const status = account.status || 'unknown';
+                const statusText = status === 'active' ? '✅' : (status === 'blocked' ? '🔒' : '⏳');
+                select.innerHTML += `<option value="${account.id}">${statusText} ${account.name} (${account.id})</option>`;
+            });
+
+            // Afficher la liste
+            accountsList.innerHTML = ACCOUNTS.map(account => {
+                const statusClass = account.status === 'active' ? 'status-active' : 
+                                   (account.status === 'blocked' ? 'status-blocked' : 'status-loading');
+                const statusIcon = account.status === 'active' ? '✅' : 
+                                  (account.status === 'blocked' ? '🔒' : '⏳');
+                
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; border-bottom: 1px solid #253b47;">
+                        <div>
+                            <strong style="color:#ffffff;">${account.name}</strong>
+                            <span style="color:#a0b8c7; margin-left: 0.5rem;">${account.handle}</span>
+                        </div>
+                        <div>
+                            <span class="status-badge ${statusClass}">${statusIcon} ${account.status}</span>
+                            <span style="color:#6d8f9f; margin-left: 0.5rem; font-size:0.8rem;">${account.source || 'manual'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Charger un compte
+        async function loadSelectedAccount() {
+            const select = document.getElementById('accountSelect');
+            const accountId = select.value;
+            
+            if (!accountId) {
+                alert('Choisis un compte');
+                return;
+            }
+
+            const account = ACCOUNTS.find(a => a.id === accountId);
+            if (!account) return;
+
+            await loadAccountData(account);
+        }
+
+        // Charger tous les comptes
+        async function loadAllAccounts() {
+            if (typeof ACCOUNTS === 'undefined') return;
+            
+            document.body.style.cursor = 'wait';
+            for (const account of ACCOUNTS) {
+                if (account.status === 'active') {
+                    await loadAccountData(account, false);
+                }
+            }
+            document.body.style.cursor = 'default';
+            
+            // Afficher le dernier compte chargé
+            if (loadedAccountsData.length > 0) {
+                displayAccountData(loadedAccountsData[loadedAccountsData.length - 1].data);
+            }
+        }
+
+        // Charger les données d'un compte
+        async function loadAccountData(account, display = true) {
+            try {
+                // Nettoyer l'ancien script
+                const oldScript = document.querySelector('script[src*="data/"]');
+                if (oldScript) oldScript.remove();
+                
+                delete window.CHESS_DATA;
+
+                // Charger le nouveau
+                await loadScript(account.dataFile);
+                
+                if (window.CHESS_DATA) {
+                    loadedAccountsData.push({
+                        id: account.id,
+                        name: account.name,
+                        data: window.CHESS_DATA
+                    });
+                    
+                    if (display) {
+                        displayAccountData(window.CHESS_DATA);
+                    }
+                    
+                    updateAccountsCount();
+                    showNotification(`✅ ${account.name} chargé`, '#82c4a8');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showNotification(`❌ Erreur chargement ${account.name}`, '#ff6b6b');
+            }
+        }
+
+        // Afficher les données
+        function displayAccountData(data) {
+            document.getElementById('infoPanel').style.display = 'grid';
+            document.getElementById('rawData').style.display = 'block';
+
+            // Source et date
+            document.getElementById('dataSource').innerHTML = `<i class="fas fa-database"></i> ${data.source || 'manuel'}`;
+            document.getElementById('dataDate').innerHTML = `<i class="fas fa-calendar"></i> ${data.lastUpdate || 'inconnue'}`;
+
+            // Données brutes
+            document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+
+            // Infos compte
+            const accountInfo = document.getElementById('accountInfo');
+            accountInfo.innerHTML = `
+                <div class="info-item">
+                    <div class="info-label">Dernière mise à jour</div>
+                    <div class="info-value">${data.lastUpdate || 'N/A'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Trophées</div>
+                    <div class="info-value">${data.badges?.trophies || 0}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Pic Bullet</div>
+                    <div class="info-value">${data.badges?.peakBullet || 0}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Pic Rapide</div>
+                    <div class="info-value">${data.badges?.peakRapide || 0}</div>
+                </div>
+            `;
+
+            // Infos ELO
+            const eloInfo = document.getElementById('eloInfo');
+            const modes = ['bullet', 'blitz', 'rapide'];
+            
+            eloInfo.innerHTML = modes.map(mode => {
+                if (!data.elo[mode]) return '';
+                
+                const current = data.elo[mode].current;
+                const target = data.elo[mode].target;
+                const percent = (current / target * 100).toFixed(1);
+                
+                return `
+                    <div class="info-item">
+                        <div class="info-label">${mode.charAt(0).toUpperCase() + mode.slice(1)}</div>
+                        <div class="info-value">
+                            ${current} <small>/ ${target}</small>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: ${percent}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mettre à jour le compteur
+        function updateAccountsCount() {
+            document.getElementById('accountsCount').textContent = 
+                `${loadedAccountsData.length} compte(s) chargé(s)`;
+        }
+
+        // Nettoyer les données
+        function clearData() {
+            loadedAccountsData = [];
+            delete window.CHESS_DATA;
+            
+            document.getElementById('infoPanel').style.display = 'none';
+            document.getElementById('rawData').style.display = 'none';
+            document.getElementById('rawJson').textContent = 'Sélectionne un compte pour voir les données';
+            updateAccountsCount();
+            
+            showNotification('🧹 Données nettoyées', '#a0b8c7');
+        }
+
+        // Charger un script
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src + '?t=' + Date.now();
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Notification
+        function showNotification(message, color) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${color};
+                color: #0b1219;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                border-left: 4px solid white;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Exposer les fonctions
+        window.loadSelectedAccount = loadSelectedAccount;
+        window.loadAllAccounts = loadAllAccounts;
+        window.clearData = clearData;
+    </script>
+</body>
+</html>
